@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AnimatedCubes } from "@/components/animated-cubes";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -59,30 +60,32 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950 transition-colors duration-300 relative">
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-black transition-colors duration-300 relative">
       {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
       
-      <div className="max-w-md w-full space-y-8 p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-            Nova
-          </h1>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Or{" "}
-            <Link
-              href="/sign-up"
-              className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-300"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
+      {/* Left Side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="max-w-md w-full space-y-8 p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+              Welcome back
+            </h1>
+            <h2 className="mt-6 text-xl font-medium text-gray-900 dark:text-white">
+              Login to your Sol account
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-300"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSignIn}>
           {error && (
@@ -124,7 +127,7 @@ export default function SignIn() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-{loading ? "Sending magic link..." : "Send magic link"}
+              {loading ? "Sending magic link..." : "Send magic link"}
             </button>
           </div>
 
@@ -137,6 +140,13 @@ export default function SignIn() {
             </Link>
           </div>
         </form>
+        </div>
+      </div>
+
+      {/* Right Side - Animated Cubes */}
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-400/10 dark:via-purple-400/10 dark:to-pink-400/10"></div>
+        <AnimatedCubes />
       </div>
     </div>
   );
