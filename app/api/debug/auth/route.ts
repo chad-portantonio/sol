@@ -2,10 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+interface DebugInfo {
+  timestamp: string;
+  url: string;
+  searchParams: Record<string, string>;
+  headers: Record<string, string>;
+  method: string;
+  supabase?: {
+    hasSession: boolean;
+    sessionError?: string;
+    hasUser: boolean;
+    userError?: string;
+    userId?: string;
+    userEmail?: string;
+  };
+  supabaseError?: string;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   
-  const debugInfo: any = {
+  const debugInfo: DebugInfo = {
     timestamp: new Date().toISOString(),
     url: request.url,
     searchParams: Object.fromEntries(searchParams.entries()),
