@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   
-  const debugInfo = {
+  const debugInfo: any = {
     timestamp: new Date().toISOString(),
     url: request.url,
     searchParams: Object.fromEntries(searchParams.entries()),
