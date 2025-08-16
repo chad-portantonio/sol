@@ -156,21 +156,35 @@ export async function GET(request: NextRequest) {
       console.log(`🔐 Processing OTP verification for type: ${type}`);
       
       try {
-        // For PKCE tokens, they still need OTP verification when coming through token parameter
+        // Handle both PKCE and traditional tokens - try multiple approaches
+        console.log('🔄 Attempting token verification...');
+        
         if (token.startsWith('pkce_')) {
-          console.log('🔑 PKCE token detected - using OTP verification for token parameter');
+          console.log('🔑 PKCE token detected - trying different verification methods');
           
-          // PKCE tokens coming through the token parameter should use verifyOtp
-          // The exchangeCodeForSession is only for authorization codes in the code parameter
-          authResult = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: type as 'signup' | 'recovery' | 'email_change',
-          });
-          
-          if (authResult.error) {
-            console.error('🚨 PKCE token OTP verification failed:', authResult.error);
-          } else {
-            console.log('✅ PKCE token OTP verification successful');
+          // First, try treating PKCE token as authorization code (some Supabase versions)
+          try {
+            console.log('Attempt 1: PKCE token as authorization code');
+            const codeResult = await supabase.auth.exchangeCodeForSession(token);
+            if (!codeResult.error) {
+              console.log('✅ PKCE token authorization code exchange successful');
+              authResult = codeResult;
+            } else {
+              throw codeResult.error;
+            }
+          } catch (codeError) {
+            console.log('Attempt 1 failed, trying OTP verification');
+            // If that fails, try OTP verification
+            try {
+              authResult = await supabase.auth.verifyOtp({
+                token_hash: token,
+                type: type as 'signup' | 'recovery' | 'email_change',
+              });
+              console.log('✅ PKCE token OTP verification successful');
+            } catch (otpError) {
+              console.error('🚨 Both PKCE verification methods failed');
+              authResult = { error: otpError instanceof Error ? otpError : new Error('PKCE token verification failed') };
+            }
           }
         } else {
           // Traditional OTP verification for non-PKCE tokens

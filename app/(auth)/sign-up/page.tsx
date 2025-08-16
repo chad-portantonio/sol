@@ -29,7 +29,9 @@ export default function SignUp() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: process.env.NODE_ENV === 'production' 
+            ? 'https://portantonio.co/auth/callback'
+            : `${window.location.origin}/auth/callback`,
         },
       });
 
