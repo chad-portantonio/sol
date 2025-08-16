@@ -1,221 +1,311 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
-
 export function AnimatedCubes() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Add CSS animation keyframes if they don't exist
-    const styleSheet = document.styleSheets[0];
-    const keyframes = `
-      @keyframes flowingLight {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
-      }
-      @keyframes float {
-        0%, 100% {
-          transform: translateY(0px) rotateX(0deg) rotateY(0deg);
-        }
-        50% {
-          transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
-        }
-      }
-    `;
-
-    try {
-      styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
-    } catch (e) {
-      // Keyframes might already exist
-    }
-  }, []);
-
   return (
-    <div ref={containerRef} className="relative w-full h-full flex items-center justify-center perspective-1000">
-      <div className="relative w-80 h-80">
-        {/* Cube 1 - Top */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '20px',
-            left: '100px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '0s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      {/* Background ambient glow */}
+      <div className="absolute inset-0 bg-gradient-radial from-blue-500/5 via-purple-500/3 to-transparent"></div>
+      
+      {/* Main container with perspective */}
+      <div 
+        className="relative" 
+        style={{ 
+          perspective: '1200px',
+          transform: 'rotateX(10deg) rotateY(-15deg)'
+        }}
+      >
+        <div className="relative w-96 h-96">
+          
+          {/* Cube 1 - Top Center */}
           <div 
-            className="cube-face cube-top bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 dark:from-blue-500 dark:via-purple-500 dark:to-blue-500"
+            className="absolute"
             style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite'
+              width: '100px',
+              height: '100px',
+              top: '50px',
+              left: '150px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 8s ease-in-out infinite',
+              animationDelay: '0s'
             }}
-          ></div>
-        </div>
+          >
+            {/* Front face */}
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600 shadow-lg"
+              style={{ 
+                transform: 'translateZ(50px)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
+              }}
+            ></div>
+            
+            {/* Right face */}
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ 
+                transform: 'rotateY(90deg) translateZ(50px)',
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%)'
+              }}
+            ></div>
+            
+            {/* Top face with flowing animation */}
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(50px)',
+                background: 'linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 4s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
 
-        {/* Cube 2 - Top Right */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '40px',
-            left: '180px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '1s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
+          {/* Cube 2 - Top Right */}
           <div 
-            className="cube-face cube-top bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-400 dark:from-orange-500 dark:via-yellow-500 dark:to-orange-500"
+            className="absolute"
             style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite',
-              animationDelay: '0.5s'
-            }}
-          ></div>
-        </div>
-
-        {/* Cube 3 - Middle Left */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '120px',
-            left: '60px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '2s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
-          <div 
-            className="cube-face cube-top bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 dark:from-purple-500 dark:via-pink-500 dark:to-purple-500"
-            style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite',
-              animationDelay: '1s'
-            }}
-          ></div>
-        </div>
-
-        {/* Cube 4 - Center */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '140px',
-            left: '140px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '3s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
-          <div 
-            className="cube-face cube-top bg-gradient-to-r from-green-400 via-teal-400 to-green-400 dark:from-green-500 dark:via-teal-500 dark:to-green-500"
-            style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite',
+              width: '90px',
+              height: '90px',
+              top: '80px',
+              left: '250px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 7s ease-in-out infinite',
               animationDelay: '1.5s'
             }}
-          ></div>
-        </div>
+          >
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600"
+              style={{ transform: 'translateZ(45px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ transform: 'rotateY(90deg) translateZ(45px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(45px)',
+                background: 'linear-gradient(45deg, #f59e0b, #ef4444, #f59e0b)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 4.5s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3.2s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
 
-        {/* Cube 5 - Bottom Left */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '220px',
-            left: '80px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '4s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
+          {/* Cube 3 - Middle Left */}
           <div 
-            className="cube-face cube-top bg-gradient-to-r from-indigo-400 via-blue-400 to-indigo-400 dark:from-indigo-500 dark:via-blue-500 dark:to-indigo-500"
+            className="absolute"
             style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite',
+              width: '95px',
+              height: '95px',
+              top: '150px',
+              left: '80px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 9s ease-in-out infinite',
+              animationDelay: '3s'
+            }}
+          >
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600"
+              style={{ transform: 'translateZ(47px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ transform: 'rotateY(90deg) translateZ(47px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(47px)',
+                background: 'linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 5s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 2.8s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Cube 4 - Center Large */}
+          <div 
+            className="absolute"
+            style={{
+              width: '110px',
+              height: '110px',
+              top: '140px',
+              left: '170px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 6s ease-in-out infinite',
               animationDelay: '2s'
             }}
-          ></div>
-        </div>
+          >
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600 shadow-xl"
+              style={{ transform: 'translateZ(55px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ transform: 'rotateY(90deg) translateZ(55px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(55px)',
+                background: 'linear-gradient(45deg, #10b981, #06b6d4, #10b981)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 3.5s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-70"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 2.5s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
 
-        {/* Cube 6 - Bottom Right */}
-        <div 
-          className="absolute cube"
-          style={{
-            width: '80px',
-            height: '80px',
-            top: '200px',
-            left: '160px',
-            transformStyle: 'preserve-3d',
-            animation: 'float 6s ease-in-out infinite',
-            animationDelay: '5s'
-          }}
-        >
-          <div className="cube-face cube-front bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
-          <div className="cube-face cube-right bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-800"></div>
+          {/* Cube 5 - Bottom Left */}
           <div 
-            className="cube-face cube-top bg-gradient-to-r from-red-400 via-pink-400 to-red-400 dark:from-red-500 dark:via-pink-500 dark:to-red-500"
+            className="absolute"
             style={{
-              backgroundSize: '200% 100%',
-              animation: 'flowingLight 3s ease-in-out infinite',
-              animationDelay: '2.5s'
+              width: '85px',
+              height: '85px',
+              top: '240px',
+              left: '120px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 10s ease-in-out infinite',
+              animationDelay: '4s'
             }}
-          ></div>
+          >
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600"
+              style={{ transform: 'translateZ(42px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ transform: 'rotateY(90deg) translateZ(42px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(42px)',
+                background: 'linear-gradient(45deg, #6366f1, #3b82f6, #6366f1)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 6s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3.8s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Cube 6 - Bottom Right */}
+          <div 
+            className="absolute"
+            style={{
+              width: '88px',
+              height: '88px',
+              top: '220px',
+              left: '240px',
+              transformStyle: 'preserve-3d',
+              animation: 'float 8.5s ease-in-out infinite',
+              animationDelay: '5.5s'
+            }}
+          >
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600"
+              style={{ transform: 'translateZ(44px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900 border border-gray-400 dark:border-gray-700"
+              style={{ transform: 'rotateY(90deg) translateZ(44px)' }}
+            ></div>
+            <div 
+              className="absolute w-full h-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              style={{ 
+                transform: 'rotateX(90deg) translateZ(44px)',
+                background: 'linear-gradient(45deg, #ef4444, #f97316, #ef4444)',
+                backgroundSize: '300% 300%',
+                animation: 'flowingGradient 4.8s ease-in-out infinite'
+              }}
+            >
+              <div 
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3.3s ease-in-out infinite'
+                }}
+              ></div>
+            </div>
+          </div>
+
         </div>
       </div>
 
+      {/* Global styles */}
       <style jsx>{`
-        .perspective-1000 {
-          perspective: 1000px;
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+          }
+          33% {
+            transform: translateY(-15px) rotateX(2deg) rotateY(1deg);
+          }
+          66% {
+            transform: translateY(-8px) rotateX(-1deg) rotateY(-2deg);
+          }
         }
         
-        .cube {
-          transform-style: preserve-3d;
+        @keyframes flowingGradient {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
         }
         
-        .cube-face {
-          position: absolute;
-          width: 80px;
-          height: 80px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .cube-front {
-          transform: rotateY(0deg) translateZ(40px);
-        }
-        
-        .cube-right {
-          transform: rotateY(90deg) translateZ(40px);
-        }
-        
-        .cube-top {
-          transform: rotateX(90deg) translateZ(40px);
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
         }
       `}</style>
     </div>

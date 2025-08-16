@@ -156,20 +156,21 @@ export async function GET(request: NextRequest) {
       console.log(`🔐 Processing OTP verification for type: ${type}`);
       
       try {
-        // For PKCE tokens, we need to handle them differently
+        // For PKCE tokens, they still need OTP verification when coming through token parameter
         if (token.startsWith('pkce_')) {
-          console.log('🔑 PKCE token detected - attempting session exchange');
+          console.log('🔑 PKCE token detected - using OTP verification for token parameter');
           
-          // PKCE tokens should be treated as authorization codes, not OTP tokens
-          // Use exchangeCodeForSession for PKCE flow
-          const { data, error } = await supabase.auth.exchangeCodeForSession(token);
+          // PKCE tokens coming through the token parameter should use verifyOtp
+          // The exchangeCodeForSession is only for authorization codes in the code parameter
+          authResult = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as 'signup' | 'recovery' | 'email_change',
+          });
           
-          if (error) {
-            console.error('🚨 PKCE session exchange failed:', error);
-            authResult = { error };
+          if (authResult.error) {
+            console.error('🚨 PKCE token OTP verification failed:', authResult.error);
           } else {
-            console.log('✅ PKCE session exchange successful');
-            authResult = { data, error: null };
+            console.log('✅ PKCE token OTP verification successful');
           }
         } else {
           // Traditional OTP verification for non-PKCE tokens
