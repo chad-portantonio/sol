@@ -157,7 +157,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link 
-              href="/student/sign-up"
+              href="/student-sign-up"
               className="group px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 text-white rounded-xl font-semibold text-lg hover:from-green-600 hover:to-green-700 dark:hover:from-green-500 dark:hover:to-green-600 transition-all duration-300 shadow-xl hover:shadow-green-500/25 dark:hover:shadow-green-400/25 transform hover:-translate-y-1 hover:scale-105"
             >
               <span className="flex items-center">
@@ -168,7 +168,7 @@ export default function Home() {
               </span>
             </Link>
             <Link 
-              href="/student/sign-in"
+              href="/student-sign-in"
               className="px-8 py-4 border-2 border-green-500 dark:border-green-400 text-green-700 dark:text-green-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl font-semibold text-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
             >
               Already Registered?

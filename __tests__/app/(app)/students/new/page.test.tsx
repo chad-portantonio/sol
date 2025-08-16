@@ -128,7 +128,10 @@ describe('NewStudent Page', () => {
 
     // Check for loading state
     expect(screen.getByText('Creating Student...')).toBeInTheDocument();
-    expect(screen.getByText('Creating Student...')).toBeDisabled();
+    
+    // Check that the submit button is disabled during loading
+    const submitButton = screen.getByRole('button', { name: /Creating Student/i });
+    expect(submitButton).toBeDisabled();
   });
 
   it('should handle API errors gracefully', async () => {
@@ -213,8 +216,10 @@ describe('NewStudent Page', () => {
     });
 
     // Mock window.location.origin
-    delete (window as any).location;
-    window.location = { origin: 'http://localhost:3000' } as any;
+    Object.defineProperty(window, 'location', {
+      value: { origin: 'http://localhost' },
+      writable: true,
+    });
 
     render(<NewStudent />);
 
@@ -311,8 +316,10 @@ describe('NewStudent Page', () => {
     // Mock window.alert
     window.alert = jest.fn();
 
-    delete (window as any).location;
-    window.location = { origin: 'http://localhost:3000' } as any;
+    Object.defineProperty(window, 'location', {
+      value: { origin: 'http://localhost' },
+      writable: true,
+    });
 
     render(<NewStudent />);
 
@@ -333,7 +340,7 @@ describe('NewStudent Page', () => {
     // Wait for clipboard action
     await waitFor(() => {
       expect(mockWriteText).toHaveBeenCalledWith('http://localhost/parent/token-123');
-      expect(window.alert).toHaveBeenCalledWith('Parent link copied to clipboard!');
+      expect(screen.getByText('Copied!')).toBeInTheDocument();
     });
   });
 });

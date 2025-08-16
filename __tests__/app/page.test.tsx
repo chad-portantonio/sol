@@ -13,9 +13,9 @@ describe('HomePage', () => {
   it('displays feature cards', () => {
     render(<HomePage />)
     
-    expect(screen.getByText(/student management/i)).toBeInTheDocument()
-    expect(screen.getByText(/session tracking/i)).toBeInTheDocument()
-    expect(screen.getByText(/parent communication/i)).toBeInTheDocument()
+    expect(screen.getByText('Smart Student Management')).toBeInTheDocument()
+    expect(screen.getByText('Automated Session Tracking')).toBeInTheDocument()
+    expect(screen.getByText('Parent Communication Hub')).toBeInTheDocument()
   })
 
   it('shows pricing information', () => {
@@ -41,9 +41,9 @@ describe('HomePage', () => {
   it('shows feature list in pricing section', () => {
     render(<HomePage />)
     
-    expect(screen.getByText(/unlimited sessions/i)).toBeInTheDocument()
-    expect(screen.getByText(/parent communication/i)).toBeInTheDocument()
-    expect(screen.getByText(/email reminders/i)).toBeInTheDocument()
+    expect(screen.getByText('Unlimited sessions')).toBeInTheDocument()
+    expect(screen.getByText('Parent communication portal')).toBeInTheDocument()
+    expect(screen.getByText('Email reminders & notifications')).toBeInTheDocument()
   })
 
   it('has navigation with sign-in and sign-up links', () => {
@@ -59,5 +59,15 @@ describe('HomePage', () => {
     expect(screen.getByText('For Students & Parents')).toBeInTheDocument()
     expect(screen.getByText('Student Portal')).toBeInTheDocument()
     expect(screen.getByText('Already Registered?')).toBeInTheDocument()
+  })
+
+  it('has correct student portal links', () => {
+    render(<HomePage />)
+    
+    const studentPortalLink = screen.getByText('Student Portal').closest('a')
+    const alreadyRegisteredLink = screen.getByText('Already Registered?').closest('a')
+    
+    expect(studentPortalLink).toHaveAttribute('href', '/student-sign-up')
+    expect(alreadyRegisteredLink).toHaveAttribute('href', '/student-sign-in')
   })
 })
