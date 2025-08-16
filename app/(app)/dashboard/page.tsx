@@ -7,57 +7,110 @@ import { redirect } from 'next/navigation';
 
 export default async function Dashboard() {
   try {
-    const { userId } = await requireUser();
+    const { userId, email } = await requireUser();
     
-    const tutor = await prisma.tutor.findUnique({
-      where: { userId },
-      include: {
-        students: {
+    // Retry logic for database connection issues
+    let tutor = null;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (!tutor && retryCount < maxRetries) {
+      try {
+        tutor = await prisma.tutor.findUnique({
+          where: { userId },
           include: {
-            sessions: {
-              where: {
-                startTime: {
-                  gte: new Date(),
+            students: {
+              include: {
+                sessions: {
+                  where: {
+                    startTime: {
+                      gte: new Date(),
+                    },
+                  },
+                  orderBy: { startTime: 'asc' },
+                  take: 1,
                 },
               },
-              orderBy: { startTime: 'asc' },
-              take: 1,
+              orderBy: { createdAt: 'desc' },
             },
           },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
-
-    if (!tutor) {
-      // If no tutor profile exists, try to create one
-      try {
-        const { email } = await requireUser();
-        await prisma.tutor.create({
-          data: {
-            userId,
-            email,
-          },
         });
-        // Redirect to refresh the page with the new tutor profile
-        return redirect('/dashboard');
-      } catch (error) {
-        console.error('Failed to create tutor profile:', error);
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Setup Required</h2>
-            <p className="text-gray-600 mb-6">There was an issue setting up your account. Please try signing out and back in.</p>
-            <form action="/api/auth/signout" method="post">
-              <button
-                type="submit"
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Sign Out
-              </button>
-            </form>
-          </div>
-        );
+        
+        if (!tutor) {
+          // Try to create tutor profile if it doesn't exist
+          try {
+            await prisma.tutor.create({
+              data: {
+                userId,
+                email,
+              },
+            });
+            // Redirect to refresh the page with the new tutor profile
+            return redirect('/dashboard');
+          } catch (createError: unknown) {
+            // If it's a unique constraint error, the tutor might already exist
+            const prismaError = createError as { code?: string };
+            if (prismaError?.code === 'P2002' || (createError as Error)?.message?.includes('Unique constraint')) {
+              // Try to find the tutor again
+              tutor = await prisma.tutor.findUnique({
+                where: { userId },
+                include: {
+                  students: {
+                    include: {
+                      sessions: {
+                        where: {
+                          startTime: {
+                            gte: new Date(),
+                          },
+                        },
+                        orderBy: { startTime: 'asc' },
+                        take: 1,
+                      },
+                    },
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              });
+              if (tutor) break; // Found the tutor, exit retry loop
+            }
+            throw createError; // Re-throw if not a duplicate error
+          }
+        }
+        break; // Success, exit retry loop
+      } catch (error: unknown) {
+        retryCount++;
+        console.error(`Dashboard query attempt ${retryCount} failed:`, error);
+        
+        // If it's a connection error and we have retries left, wait and try again
+        const errorMessage = (error as Error)?.message || '';
+        const errorCode = (error as { code?: string })?.code;
+        if (retryCount < maxRetries && (
+          errorMessage.includes('prepared statement') ||
+          errorMessage.includes('ConnectorError') ||
+          errorCode === 'P1001' // Connection error
+        )) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+          continue;
+        }
+        
+        // If we've exhausted retries or it's a different error, throw
+        throw error;
       }
+    }
+    
+    if (!tutor) {
+      return (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Setup In Progress</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Your account is being set up. Please refresh the page in a moment.</p>
+          <Link
+            href="/dashboard"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+          >
+            Refresh Page
+          </Link>
+        </div>
+      );
     }
 
     const activeStudents = tutor.students.filter((student: Student) => student.active);
