@@ -14,8 +14,16 @@ export async function GET(request: NextRequest) {
     token: token ? 'present' : 'missing',
     type,
     origin,
+    url: request.url,
     searchParams: Object.fromEntries(searchParams.entries())
   });
+
+  // Handle case where user might be accessing this directly from a Supabase verification URL
+  // If we have no code or token, check if we need to redirect them to the sign-in page
+  if (!code && !token) {
+    console.log('No auth parameters found - redirecting to sign-in');
+    return NextResponse.redirect(`${origin}/sign-in?message=Please request a new magic link to sign in.`);
+  }
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -39,17 +47,18 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  // Handle OAuth/PKCE flow (with code parameter)
+  // Handle OAuth/PKCE flow (with code parameter) - this includes magic links using PKCE
   if (code) {
+    console.log('Processing PKCE code exchange for authentication');
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (error) {
       console.error('Auth code exchange failed:', error);
-      return NextResponse.redirect(`${origin}/sign-in?error=Email verification failed: ${encodeURIComponent(error.message)}`);
+      return NextResponse.redirect(`${origin}/sign-in?error=Authentication failed: ${encodeURIComponent(error.message)}`);
     }
     
     // Successfully confirmed email and signed in
-    console.log('OAuth/PKCE authentication successful');
+    console.log('PKCE authentication successful (including magic links)');
     
     // Get the authenticated user
     const { data: { user } } = await supabase.auth.getUser();
@@ -115,19 +124,23 @@ export async function GET(request: NextRequest) {
 
   // Handle email confirmation flow (with token and type parameters)
   if (token && type) {
+    console.log(`Processing token verification for type: ${type}`);
     let authResult;
     
     if (type === 'magiclink') {
-      // Handle magic link verification - no need to call verifyOtp for magic links
-      // Magic links are automatically verified by Supabase when the user clicks them
-      console.log('Magic link authentication detected');
+      // Handle traditional magic link verification
+      console.log('Traditional magic link authentication detected');
       authResult = { error: null };
-    } else {
-      // Handle other types of verification (signup, recovery, email_change)
+    } else if (type === 'signup' || type === 'recovery' || type === 'email_change') {
+      // Handle OTP verification for signup confirmations, recovery, etc.
+      console.log(`Processing OTP verification for type: ${type}`);
       authResult = await supabase.auth.verifyOtp({
         token_hash: token,
         type: type as 'signup' | 'recovery' | 'email_change',
       });
+    } else {
+      console.warn(`Unknown verification type: ${type}`);
+      authResult = { error: new Error(`Unsupported verification type: ${type}`) };
     }
     
     if (authResult.error) {
