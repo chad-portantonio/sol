@@ -96,7 +96,7 @@ export function StudentActions({ student }: StudentActionsProps) {
         throw new Error(data.error || "Failed to delete student");
       }
 
-      router.push("/app/dashboard");
+      router.push("/dashboard");
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -106,18 +106,18 @@ export function StudentActions({ student }: StudentActionsProps) {
 
   if (showEditForm) {
     return (
-      <div className="bg-white shadow-lg rounded-lg border border-gray-200 p-6 min-w-[400px]">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Student</h3>
+      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 p-6 min-w-[400px] transition-colors">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-4">Edit Student</h3>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md mb-4 transition-colors">
             {error}
           </div>
         )}
 
         <form onSubmit={handleEdit} className="space-y-4">
           <div>
-            <label htmlFor="editFullName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editFullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Full Name
             </label>
             <input
@@ -126,12 +126,12 @@ export function StudentActions({ student }: StudentActionsProps) {
               required
               value={editData.fullName}
               onChange={(e) => setEditData({ ...editData, fullName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             />
           </div>
 
           <div>
-            <label htmlFor="editSubject" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editSubject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Subject
             </label>
             <input
@@ -140,12 +140,12 @@ export function StudentActions({ student }: StudentActionsProps) {
               required
               value={editData.subject}
               onChange={(e) => setEditData({ ...editData, subject: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             />
           </div>
 
           <div>
-            <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Year/Level
             </label>
             <input
@@ -154,12 +154,12 @@ export function StudentActions({ student }: StudentActionsProps) {
               required
               value={editData.year}
               onChange={(e) => setEditData({ ...editData, year: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             />
           </div>
 
           <div>
-            <label htmlFor="editParentEmail" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editParentEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Parent Email
             </label>
             <input
@@ -167,7 +167,7 @@ export function StudentActions({ student }: StudentActionsProps) {
               id="editParentEmail"
               value={editData.parentEmail}
               onChange={(e) => setEditData({ ...editData, parentEmail: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             />
           </div>
 
@@ -179,7 +179,7 @@ export function StudentActions({ student }: StudentActionsProps) {
               onChange={(e) => setEditData({ ...editData, active: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="editActive" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="editActive" className="ml-2 block text-sm text-gray-900 dark:text-white">
               Active Student
             </label>
           </div>
@@ -188,14 +188,14 @@ export function StudentActions({ student }: StudentActionsProps) {
             <button
               type="button"
               onClick={() => setShowEditForm(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
@@ -209,7 +209,7 @@ export function StudentActions({ student }: StudentActionsProps) {
     <div className="flex space-x-3">
       <button
         onClick={() => setShowEditForm(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
       >
         Edit Student
       </button>
@@ -219,8 +219,8 @@ export function StudentActions({ student }: StudentActionsProps) {
         disabled={loading}
         className={`px-4 py-2 rounded-md transition-colors ${
           student.active
-            ? "bg-yellow-600 text-white hover:bg-yellow-700"
-            : "bg-green-600 text-white hover:bg-green-700"
+            ? "bg-yellow-600 dark:bg-yellow-500 text-white hover:bg-yellow-700 dark:hover:bg-yellow-600"
+            : "bg-green-600 dark:bg-green-500 text-white hover:bg-green-700 dark:hover:bg-green-600"
         } disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {loading ? "Updating..." : student.active ? "Deactivate" : "Activate"}
@@ -229,7 +229,7 @@ export function StudentActions({ student }: StudentActionsProps) {
       <button
         onClick={handleDelete}
         disabled={loading}
-        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Deleting..." : "Delete"}
       </button>

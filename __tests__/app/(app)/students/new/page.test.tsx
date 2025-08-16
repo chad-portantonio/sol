@@ -108,7 +108,8 @@ describe('NewStudent Page', () => {
     // Check for success state
     await waitFor(() => {
       expect(screen.getByText('Student Created Successfully!')).toBeInTheDocument();
-      expect(screen.getByText(/John Doe.*has been added to your student list/)).toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('has been added to your student list.')).toBeInTheDocument();
     });
   });
 
@@ -212,8 +213,10 @@ describe('NewStudent Page', () => {
     });
 
     // Mock window.location.origin
-    delete (window as any).location;
-    (window as any).location = { origin: 'http://localhost:3000' };
+    Object.defineProperty(window, 'location', {
+      value: { origin: 'http://localhost:3000' },
+      writable: true
+    });
 
     render(<NewStudent />);
 
@@ -276,7 +279,7 @@ describe('NewStudent Page', () => {
 
     // Should return to form view
     expect(screen.getByText('Add New Student')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('')).toHaveLength; // Form inputs should be cleared
+    expect(screen.getByDisplayValue('').closest('input')).toHaveAttribute('name', 'fullName'); // Form inputs should be cleared
   });
 
   it('should copy parent link to clipboard', async () => {
@@ -310,8 +313,10 @@ describe('NewStudent Page', () => {
     // Mock window.alert
     window.alert = jest.fn();
 
-    delete (window as any).location;
-    (window as any).location = { origin: 'http://localhost:3000' };
+    Object.defineProperty(window, 'location', {
+      value: { origin: 'http://localhost:3000' },
+      writable: true
+    });
 
     render(<NewStudent />);
 

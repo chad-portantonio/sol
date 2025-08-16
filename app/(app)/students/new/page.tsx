@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Student } from "@/lib/types";
 
 export default function NewStudent() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: "",
     subject: "",
@@ -15,6 +17,8 @@ export default function NewStudent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [newStudent, setNewStudent] = useState<Student | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [autoRedirectCountdown, setAutoRedirectCountdown] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,20 +59,52 @@ export default function NewStudent() {
 
   const copyParentLink = async () => {
     if (newStudent?.parentLinkToken) {
-      const parentLink = `${window.location.origin}/parent/${newStudent.parentLinkToken}`;
-      await navigator.clipboard.writeText(parentLink);
-      alert("Parent link copied to clipboard!");
+      try {
+        const parentLink = `${window.location.origin}/parent/${newStudent.parentLinkToken}`;
+        await navigator.clipboard.writeText(parentLink);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        // Fallback for browsers that don't support clipboard API
+        alert("Could not copy to clipboard. Please copy the link manually.");
+      }
     }
   };
+
+  const startAutoRedirect = () => {
+    setAutoRedirectCountdown(10);
+  };
+
+  const cancelAutoRedirect = () => {
+    setAutoRedirectCountdown(null);
+  };
+
+  // Auto-redirect countdown effect
+  useEffect(() => {
+    if (autoRedirectCountdown === null) return;
+    
+    if (autoRedirectCountdown === 0) {
+      router.push('/dashboard');
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setAutoRedirectCountdown(autoRedirectCountdown - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [autoRedirectCountdown, router]);
 
   if (success && newStudent) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6 animate-in fade-in-0 duration-500">
           <div className="flex items-center mb-4">
-            <svg className="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <div className="relative">
+              <svg className="w-6 h-6 text-green-600 mr-2 animate-in zoom-in-0 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
             <h2 className="text-xl font-semibold text-green-800 dark:text-green-300">Student Created Successfully!</h2>
           </div>
           
@@ -77,6 +113,23 @@ export default function NewStudent() {
               <strong>{newStudent.fullName}</strong> has been added to your student list.
             </p>
           </div>
+
+          {/* Auto-redirect notification */}
+          {autoRedirectCountdown !== null && (
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center justify-between">
+                <p className="text-blue-700 dark:text-blue-300 text-sm">
+                  Redirecting to dashboard in {autoRedirectCountdown} seconds...
+                </p>
+                <button
+                  onClick={cancelAutoRedirect}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white dark:bg-gray-800 p-4 rounded border border-green-200 dark:border-green-800 mb-4">
             <h3 className="font-medium text-green-800 dark:text-green-300 mb-2">Parent Link</h3>
@@ -92,28 +145,72 @@ export default function NewStudent() {
               />
               <button
                 onClick={copyParentLink}
-                className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
+                  copySuccess
+                    ? 'bg-green-700 dark:bg-green-600 text-white'
+                    : 'bg-green-600 dark:bg-green-500 text-white hover:bg-green-700 dark:hover:bg-green-600'
+                }`}
               >
-                Copy
+                {copySuccess ? (
+                  <div className="flex items-center space-x-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Copied!</span>
+                  </div>
+                ) : (
+                  'Copy'
+                )}
               </button>
             </div>
           </div>
 
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
             <Link
               href="/dashboard"
-              className="px-4 py-3 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
+              className="px-4 py-3 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-colors flex items-center space-x-2"
             >
-              Back to Dashboard
+              <span>Back to Dashboard</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
+            
+            {autoRedirectCountdown === null ? (
+              <button
+                onClick={startAutoRedirect}
+                className="px-4 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Auto-redirect (10s)</span>
+              </button>
+            ) : null}
+
+            <Link
+              href={`/students/${newStudent.id}`}
+              className="px-4 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors flex items-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Schedule Session</span>
+            </Link>
+            
             <button
               onClick={() => {
                 setSuccess(false);
                 setNewStudent(null);
+                setCopySuccess(false);
+                setAutoRedirectCountdown(null);
               }}
-              className="px-4 py-3 border border-green-600 dark:border-green-500 text-green-600 dark:text-green-400 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              className="px-4 py-3 border border-green-600 dark:border-green-500 text-green-600 dark:text-green-400 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center space-x-2"
             >
-              Add Another Student
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Add Another Student</span>
             </button>
           </div>
         </div>
@@ -136,7 +233,7 @@ export default function NewStudent() {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md transition-colors">
@@ -153,9 +250,10 @@ export default function NewStudent() {
               id="fullName"
               name="fullName"
               required
+              disabled={loading}
               value={formData.fullName}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Enter student's full name"
             />
           </div>
@@ -169,9 +267,10 @@ export default function NewStudent() {
               id="subject"
               name="subject"
               required
+              disabled={loading}
               value={formData.subject}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="e.g., Mathematics, English, Physics"
             />
           </div>
@@ -185,9 +284,10 @@ export default function NewStudent() {
               id="year"
               name="year"
               required
+              disabled={loading}
               value={formData.year}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="e.g., Grade 10, Year 12, CSEC"
             />
           </div>
@@ -200,9 +300,10 @@ export default function NewStudent() {
               type="email"
               id="parentEmail"
               name="parentEmail"
+              disabled={loading}
               value={formData.parentEmail}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="parent@example.com"
             />
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -220,9 +321,24 @@ export default function NewStudent() {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-md hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-md hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              {loading ? "Creating..." : "Create Student"}
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Creating Student...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Create Student</span>
+                </>
+              )}
             </button>
           </div>
         </form>
