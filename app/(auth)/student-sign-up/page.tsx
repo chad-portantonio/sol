@@ -3,14 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
-import { useRouter } from "next/navigation";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function StudentSignUp() {
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    confirmPassword: "",
     fullName: "",
     role: "student", // "student" or "parent"
     studentId: "", // Only for parents
@@ -22,18 +20,12 @@ export default function StudentSignUp() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const router = useRouter();
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
 
     if (formData.role === "parent" && !formData.studentId) {
       setError("Student ID is required for parent accounts");
@@ -42,10 +34,9 @@ export default function StudentSignUp() {
     }
 
     try {
-      // Create the user account
-      const { error: signUpError, data } = await supabase.auth.signUp({
+      // Send magic link
+      const { error: signUpError } = await supabase.auth.signInWithOtp({
         email: formData.email,
-        password: formData.password,
         options: {
           data: {
             full_name: formData.fullName,
@@ -58,42 +49,17 @@ export default function StudentSignUp() {
 
       if (signUpError) {
         setError(signUpError.message);
-      } else if (data.user && !data.user.email_confirmed_at) {
-        // Create student/parent record in database
-        try {
-          const response = await fetch('/api/students/create-account', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: data.user.id,
-              email: data.user.email,
-              fullName: formData.fullName,
-              role: formData.role,
-              studentId: formData.studentId || null,
-            }),
-          });
-
-          if (!response.ok) {
-            console.warn('Failed to create student/parent record, but user was created');
-          }
-        } catch (dbError) {
-          console.warn('Database error creating record:', dbError);
-        }
-
-        // Success message
-        setError("Account created! Please check your email to confirm your account before signing in.");
+      } else {
+        // Show success message
+        setError("Please check your email for a magic link to sign in. The link will expire in 1 hour.");
+        
+        // Clear form after successful signup
         setFormData({
           email: "",
-          password: "",
-          confirmPassword: "",
           fullName: "",
           role: "student",
           studentId: "",
         });
-      } else {
-        router.push("/student/sign-in?message=Account created successfully! You can now sign in.");
       }
     } catch (error) {
       console.error('Student sign-up error:', error);
@@ -219,39 +185,7 @@ export default function StudentSignUp() {
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-300"
-                placeholder="Create a password"
-              />
-            </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-300"
-                placeholder="Confirm your password"
-              />
-            </div>
           </div>
 
           <div>
@@ -260,7 +194,7 @@ export default function StudentSignUp() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {loading ? "Creating account..." : "Create account"}
+{loading ? "Sending magic link..." : "Send magic link"}
             </button>
           </div>
 

@@ -13,9 +13,9 @@ describe('HomePage', () => {
   it('displays feature cards', () => {
     render(<HomePage />)
     
-    expect(screen.getByText('Student Management')).toBeInTheDocument()
-    expect(screen.getByText('Session Tracking')).toBeInTheDocument()
-    expect(screen.getByText('Parent Communication')).toBeInTheDocument()
+    expect(screen.getByText(/student management/i)).toBeInTheDocument()
+    expect(screen.getByText(/session tracking/i)).toBeInTheDocument()
+    expect(screen.getByText(/parent communication/i)).toBeInTheDocument()
   })
 
   it('shows pricing information', () => {
@@ -28,8 +28,8 @@ describe('HomePage', () => {
   it('has call-to-action buttons', () => {
     render(<HomePage />)
     
-    expect(screen.getByText("I'm a Tutor - Get Started")).toBeInTheDocument()
-    expect(screen.getByText('Learn More')).toBeInTheDocument()
+    expect(screen.getByText('Start Your Journey')).toBeInTheDocument()
+    expect(screen.getByText('View Pricing')).toBeInTheDocument()
   })
 
   it('displays student limit information', () => {
@@ -41,9 +41,9 @@ describe('HomePage', () => {
   it('shows feature list in pricing section', () => {
     render(<HomePage />)
     
-    expect(screen.getByText('Unlimited sessions')).toBeInTheDocument()
-    expect(screen.getByText('Parent communication')).toBeInTheDocument()
-    expect(screen.getByText('Email reminders')).toBeInTheDocument()
+    expect(screen.getByText(/unlimited sessions/i)).toBeInTheDocument()
+    expect(screen.getByText(/parent communication/i)).toBeInTheDocument()
+    expect(screen.getByText(/email reminders/i)).toBeInTheDocument()
   })
 
   it('has navigation with sign-in and sign-up links', () => {
@@ -56,8 +56,8 @@ describe('HomePage', () => {
   it('has student and parent section', () => {
     render(<HomePage />)
     
-    expect(screen.getByText('Are you a Student or Parent?')).toBeInTheDocument()
-    expect(screen.getByText('Student Sign Up')).toBeInTheDocument()
-    expect(screen.getByText('Student Sign In')).toBeInTheDocument()
+    expect(screen.getByText('For Students & Parents')).toBeInTheDocument()
+    expect(screen.getByText('Student Portal')).toBeInTheDocument()
+    expect(screen.getByText('Already Registered?')).toBeInTheDocument()
   })
 })

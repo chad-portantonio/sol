@@ -41,9 +41,9 @@ export async function GET(
       subject: student.subject,
       year: student.year,
       active: student.active,
-      tutor: {
+      tutor: student.tutor ? {
         email: student.tutor.email
-      }
+      } : null
     });
   } catch (error) {
     console.error('Error fetching student:', error);

@@ -70,8 +70,8 @@ describe('/api/students/create-account', () => {
           year: 'Not specified',
           active: true,
           parentEmail: 'john@example.com',
-          parentLinkToken: null,
-          tutorId: null,
+          parentLinkToken: expect.any(String),
+          // tutorId omitted since it's optional
         },
       });
     });

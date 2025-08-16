@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface SessionFormProps {
@@ -25,8 +25,22 @@ export function SessionForm({ studentId }: SessionFormProps) {
     setLoading(true);
     setError(null);
 
+    // Use current values or default times
+    const startTime = formData.startTime || defaultTimes.start;
+    const endTime = formData.endTime || defaultTimes.end;
+
+    // Validate datetime values
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+    
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      setError("Please enter valid start and end times");
+      setLoading(false);
+      return;
+    }
+
     // Validate that end time is after start time
-    if (new Date(formData.endTime) <= new Date(formData.startTime)) {
+    if (endDate <= startDate) {
       setError("End time must be after start time");
       setLoading(false);
       return;
@@ -40,8 +54,8 @@ export function SessionForm({ studentId }: SessionFormProps) {
         },
         body: JSON.stringify({
           studentId,
-          startTime: new Date(formData.startTime).toISOString(),
-          endTime: new Date(formData.endTime).toISOString(),
+          startTime: startDate.toISOString(),
+          endTime: endDate.toISOString(),
           notes: formData.notes || undefined,
           homework: formData.homework || undefined,
         }),
@@ -91,6 +105,20 @@ export function SessionForm({ studentId }: SessionFormProps) {
 
   const defaultTimes = getDefaultTimes();
 
+  // Initialize form with default times if empty
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  useEffect(() => {
+    if (!isInitialized && !formData.startTime && !formData.endTime) {
+      setFormData(prev => ({
+        ...prev,
+        startTime: defaultTimes.start,
+        endTime: defaultTimes.end,
+      }));
+      setIsInitialized(true);
+    }
+  }, [defaultTimes.start, defaultTimes.end, formData.startTime, formData.endTime, isInitialized]);
+
   return (
     <div className={`transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +145,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
             name="startTime"
             required
             disabled={loading}
-            value={formData.startTime || defaultTimes.start}
+            value={formData.startTime}
             onChange={handleChange}
             min={new Date().toISOString().slice(0, 16)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -134,7 +162,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
             name="endTime"
             required
             disabled={loading}
-            value={formData.endTime || defaultTimes.end}
+            value={formData.endTime}
             onChange={handleChange}
             min={formData.startTime || defaultTimes.start}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

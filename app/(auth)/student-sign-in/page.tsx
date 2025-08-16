@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
-import { useRouter } from "next/navigation";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function StudentSignIn() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -16,7 +15,7 @@ export default function StudentSignIn() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const router = useRouter();
+
 
   // Check for error messages from URL params (e.g., from auth callback)
   useEffect(() => {
@@ -37,27 +36,17 @@ export default function StudentSignIn() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/student/dashboard`,
+        },
       });
 
       if (error) {
         setError(error.message);
       } else {
-        // Check user role and redirect accordingly
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const userRole = user.user_metadata?.role;
-          if (userRole === 'tutor') {
-            router.push("/app/dashboard");
-          } else {
-            router.push("/student/dashboard");
-          }
-        } else {
-          router.push("/student/dashboard");
-        }
-        router.refresh();
+        setError("Please check your email for a magic link to sign in. The link will expire in 1 hour.");
       }
     } catch (error) {
       console.error('Student sign-in error:', error);
@@ -85,7 +74,7 @@ export default function StudentSignIn() {
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Or{" "}
             <Link
-              href="/student/sign-up"
+              href="/student-sign-up"
               className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-300"
             >
               create a new account
@@ -122,22 +111,7 @@ export default function StudentSignIn() {
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-300"
-                placeholder="Enter your password"
-              />
-            </div>
+
           </div>
 
           <div>
@@ -146,7 +120,7 @@ export default function StudentSignIn() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {loading ? "Signing in..." : "Sign in"}
+{loading ? "Sending magic link..." : "Send magic link"}
             </button>
           </div>
 

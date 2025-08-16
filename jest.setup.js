@@ -22,6 +22,9 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'pk_test_test'
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db'
+process.env.STRIPE_SECRET_KEY = 'sk_test_test'
+process.env.RESEND_API_KEY = 'test-resend-key'
 
 // Mock Supabase
 jest.mock('@supabase/ssr', () => ({

@@ -64,7 +64,7 @@ export default function NewStudent() {
         await navigator.clipboard.writeText(parentLink);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-      } catch (error) {
+      } catch {
         // Fallback for browsers that don't support clipboard API
         alert("Could not copy to clipboard. Please copy the link manually.");
       }

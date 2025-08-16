@@ -213,10 +213,8 @@ describe('NewStudent Page', () => {
     });
 
     // Mock window.location.origin
-    Object.defineProperty(window, 'location', {
-      value: { origin: 'http://localhost:3000' },
-      writable: true
-    });
+    delete (window as any).location;
+    window.location = { origin: 'http://localhost:3000' } as any;
 
     render(<NewStudent />);
 
@@ -279,7 +277,7 @@ describe('NewStudent Page', () => {
 
     // Should return to form view
     expect(screen.getByText('Add New Student')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('').closest('input')).toHaveAttribute('name', 'fullName'); // Form inputs should be cleared
+    expect(screen.getByLabelText('Full Name *')).toHaveValue(''); // Form inputs should be cleared
   });
 
   it('should copy parent link to clipboard', async () => {
@@ -313,10 +311,8 @@ describe('NewStudent Page', () => {
     // Mock window.alert
     window.alert = jest.fn();
 
-    Object.defineProperty(window, 'location', {
-      value: { origin: 'http://localhost:3000' },
-      writable: true
-    });
+    delete (window as any).location;
+    window.location = { origin: 'http://localhost:3000' } as any;
 
     render(<NewStudent />);
 

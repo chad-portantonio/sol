@@ -29,7 +29,7 @@ jest.mock('@/lib/prisma', () => ({
 }));
 
 const mockRequireUser = requireUser as jest.MockedFunction<typeof requireUser>;
-const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockPrisma = prisma as any;
 
 describe('/api/sessions', () => {
   beforeEach(() => {

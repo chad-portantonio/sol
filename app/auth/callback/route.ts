@@ -50,6 +50,66 @@ export async function GET(request: NextRequest) {
     
     // Successfully confirmed email and signed in
     console.log('OAuth/PKCE authentication successful');
+    
+    // Get the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Determine if this is a tutor or student based on redirect path or user metadata
+      const isStudentFlow = next.includes('/student') || user.user_metadata?.role === 'student' || user.user_metadata?.role === 'parent';
+      
+      if (isStudentFlow) {
+        // Try to create student/parent record if it doesn't exist
+        try {
+          const response = await fetch(`${origin}/api/students/create-account`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+              fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student',
+              role: user.user_metadata?.role || 'student',
+              studentId: user.user_metadata?.student_id || null,
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('Student/parent profile created successfully');
+          } else if (response.status === 409) {
+            console.log('Student/parent profile already exists');
+          } else {
+            console.warn('Failed to create student/parent profile, but proceeding with login');
+          }
+        } catch (error) {
+          console.warn('Error creating student/parent profile:', error);
+          // Don't fail the authentication if creation fails
+        }
+      } else {
+        // Try to create tutor record if it doesn't exist
+        try {
+          const response = await fetch(`${origin}/api/tutors/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('Tutor profile created successfully');
+          } else if (response.status === 409) {
+            console.log('Tutor profile already exists');
+          } else {
+            console.warn('Failed to create tutor profile, but proceeding with login');
+          }
+        } catch (error) {
+          console.warn('Error creating tutor profile:', error);
+          // Don't fail the authentication if tutor creation fails
+        }
+      }
+    }
+    
     return NextResponse.redirect(`${origin}${next}`);
   }
 
@@ -67,6 +127,66 @@ export async function GET(request: NextRequest) {
     
     // Successfully confirmed email and signed in
     console.log('Email verification successful');
+    
+    // Get the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Determine if this is a tutor or student based on redirect path or user metadata
+      const isStudentFlow = next.includes('/student') || user.user_metadata?.role === 'student' || user.user_metadata?.role === 'parent';
+      
+      if (isStudentFlow) {
+        // Try to create student/parent record if it doesn't exist
+        try {
+          const response = await fetch(`${origin}/api/students/create-account`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+              fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student',
+              role: user.user_metadata?.role || 'student',
+              studentId: user.user_metadata?.student_id || null,
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('Student/parent profile created successfully');
+          } else if (response.status === 409) {
+            console.log('Student/parent profile already exists');
+          } else {
+            console.warn('Failed to create student/parent profile, but proceeding with login');
+          }
+        } catch (error) {
+          console.warn('Error creating student/parent profile:', error);
+          // Don't fail the authentication if creation fails
+        }
+      } else {
+        // Try to create tutor record if it doesn't exist
+        try {
+          const response = await fetch(`${origin}/api/tutors/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('Tutor profile created successfully');
+          } else if (response.status === 409) {
+            console.log('Tutor profile already exists');
+          } else {
+            console.warn('Failed to create tutor profile, but proceeding with login');
+          }
+        } catch (error) {
+          console.warn('Error creating tutor profile:', error);
+          // Don't fail the authentication if tutor creation fails
+        }
+      }
+    }
+    
     return NextResponse.redirect(`${origin}${next}`);
   }
 

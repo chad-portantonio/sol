@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,6 +52,9 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // For students, create a student record
+      // Generate a unique parent link token using crypto
+      const parentLinkToken = randomBytes(32).toString('hex');
+      
       const student = await prisma.student.create({
         data: {
           fullName,
@@ -57,8 +62,8 @@ export async function POST(request: NextRequest) {
           year: 'Not specified', // Default year, can be updated later
           active: true,
           parentEmail: email, // Students can have their own email
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
+          parentLinkToken, // Required unique field
+                  } as Prisma.StudentCreateInput, // Type assertion for optional tutor relation
       });
 
       return NextResponse.json({ 

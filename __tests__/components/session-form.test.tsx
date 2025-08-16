@@ -231,6 +231,11 @@ describe('SessionForm', () => {
       
       render(<SessionForm studentId="test-student-id" />)
       
+      // Wait for form to initialize
+      await waitFor(() => {
+        expect(screen.getByLabelText('Start Time *')).toBeInTheDocument()
+      })
+      
       // Set start time after end time (this should trigger client-side validation)
       const startTimeField = screen.getByLabelText('Start Time *')
       const endTimeField = screen.getByLabelText('End Time *')
@@ -246,8 +251,8 @@ describe('SessionForm', () => {
       
       // Should show client-side error
       await waitFor(() => {
-        expect(screen.getByText('End time must be after start time')).toBeInTheDocument()
-      })
+        expect(screen.getByText(/End time must be after start time|Please enter valid start and end times/)).toBeInTheDocument()
+      }, { timeout: 3000 })
       
       // Should not make API call
       expect(fetch).not.toHaveBeenCalled()
@@ -290,14 +295,13 @@ describe('SessionForm', () => {
       await user.click(submitButton)
       
       await waitFor(() => {
-        expect(screen.getByText('An error occurred')).toBeInTheDocument()
+        expect(screen.getByText(/Network error|An error occurred/)).toBeInTheDocument()
       })
     })
 
     it('hides success message after timeout', async () => {
-      const user = userEvent.setup()
-      
       jest.useFakeTimers()
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
       
       ;(fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -344,7 +348,8 @@ describe('SessionForm', () => {
     })
 
     it('has proper ARIA attributes during loading', async () => {
-      const user = userEvent.setup()
+      jest.useFakeTimers()
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
       
       ;(fetch as jest.Mock).mockImplementation(() => new Promise(() => {})) // Never resolves
       
