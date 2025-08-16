@@ -154,9 +154,9 @@ describe('Dashboard Page', () => {
     const dashboard = await Dashboard();
     render(dashboard);
 
-    expect(screen.getByText('Setup Required')).toBeInTheDocument();
-    expect(screen.getByText('There was an issue setting up your account. Please try signing out and back in.')).toBeInTheDocument();
-    expect(screen.getByText('Sign Out')).toBeInTheDocument();
+    expect(screen.getByText('Setup In Progress')).toBeInTheDocument();
+    expect(screen.getByText('Your account is being set up. Please refresh the page in a moment.')).toBeInTheDocument();
+    expect(screen.getByText('Refresh Page')).toBeInTheDocument();
   });
 
   it('should handle authentication errors gracefully', async () => {

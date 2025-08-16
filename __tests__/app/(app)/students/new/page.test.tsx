@@ -127,8 +127,8 @@ describe('NewStudent Page', () => {
     fireEvent.click(screen.getByText('Create Student'));
 
     // Check for loading state
-    expect(screen.getByText('Creating...')).toBeInTheDocument();
-    expect(screen.getByText('Creating...')).toBeDisabled();
+    expect(screen.getByText('Creating Student...')).toBeInTheDocument();
+    expect(screen.getByText('Creating Student...')).toBeDisabled();
   });
 
   it('should handle API errors gracefully', async () => {
@@ -230,7 +230,7 @@ describe('NewStudent Page', () => {
     });
 
     // Check for parent link
-    const parentLinkInput = screen.getByDisplayValue('http://localhost:3000/parent/token-123');
+    const parentLinkInput = screen.getByDisplayValue('http://localhost/parent/token-123');
     expect(parentLinkInput).toBeInTheDocument();
 
     // Check for action buttons
@@ -332,7 +332,7 @@ describe('NewStudent Page', () => {
 
     // Wait for clipboard action
     await waitFor(() => {
-      expect(mockWriteText).toHaveBeenCalledWith('http://localhost:3000/parent/token-123');
+      expect(mockWriteText).toHaveBeenCalledWith('http://localhost/parent/token-123');
       expect(window.alert).toHaveBeenCalledWith('Parent link copied to clipboard!');
     });
   });

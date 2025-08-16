@@ -25,9 +25,11 @@ export function SessionForm({ studentId }: SessionFormProps) {
     setLoading(true);
     setError(null);
 
-    // Use current values or default times
-    const startTime = formData.startTime || defaultTimes.start;
-    const endTime = formData.endTime || defaultTimes.end;
+    // Get form data from the actual form
+    const formElement = e.target as HTMLFormElement;
+    const formDataObj = new FormData(formElement);
+    const startTime = formDataObj.get('startTime') as string || formData.startTime || defaultTimes.start;
+    const endTime = formDataObj.get('endTime') as string || formData.endTime || defaultTimes.end;
 
     // Validate datetime values
     const startDate = new Date(startTime);
@@ -56,8 +58,8 @@ export function SessionForm({ studentId }: SessionFormProps) {
           studentId,
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
-          notes: formData.notes || undefined,
-          homework: formData.homework || undefined,
+          notes: (formDataObj.get('notes') as string) || formData.notes || undefined,
+          homework: (formDataObj.get('homework') as string) || formData.homework || undefined,
         }),
       });
 
