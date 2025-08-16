@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tutor {
+  id               String        @id @default(cuid())
+  userId           String        @unique
+  email            String        @unique
+  stripeCustomerId String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  students         Student[]
+  subscription     Subscription?
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  tutorId          String   @unique
+  status           String
+  stripeCustomerId String   @unique
+  stripeSubId      String   @unique
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  tutor            Tutor    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id              String    @id @default(cuid())
+  tutorId         String
+  fullName        String
+  subject         String
+  year            String
+  active          Boolean   @default(true)
+  parentEmail     String?
+  parentLinkToken String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  sessions        Session[]
+  tutor           Tutor     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId], map: "idx_student_tutor")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  studentId String
+  startTime DateTime
+  endTime   DateTime
+  notes     String?
+  homework  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, startTime], map: "idx_session_student_start")
+}

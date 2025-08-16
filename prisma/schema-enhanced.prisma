@@ -1,0 +1,146 @@
+// Enhanced Prisma schema with many-to-many tutor-student relationships
+// This is a proposed enhancement to support the requirement that students can work with multiple tutors
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tutor {
+  id               String        @id @default(cuid())
+  userId           String        @unique          // Supabase auth.users.id
+  email            String        @unique
+  stripeCustomerId String?       // Stripe customer ID
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  subscription     Subscription?
+  
+  // Many-to-many relationship with students
+  tutorStudents    TutorStudent[]
+  
+  // Sessions are now linked through the TutorStudent relationship
+  sessions         Session[]
+}
+
+model Parent {
+  id        String   @id @default(cuid())
+  userId    String   @unique          // Supabase auth.users.id
+  email     String   @unique
+  fullName  String
+  studentId String                   // Link to the student they're monitoring
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([studentId])
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  tutorId          String   @unique
+  status           String   // 'active' | 'past_due' | 'canceled' | 'incomplete'
+  stripeCustomerId String   @unique
+  stripeSubId      String   @unique
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id              String    @id @default(cuid())
+  fullName        String
+  subject         String    // Primary subject (can be overridden per tutor relationship)
+  year            String
+  active          Boolean   @default(true)
+  parentEmail     String?
+  parentLinkToken String?   // Optional - for tutor-linked students
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Many-to-many relationship with tutors
+  tutorStudents   TutorStudent[]
+  
+  parents         Parent[]  // Parents monitoring this student
+}
+
+// Junction table for many-to-many relationship between tutors and students
+model TutorStudent {
+  id         String   @id @default(cuid())
+  tutorId    String
+  studentId  String
+  subject    String?  // Subject for this specific tutor-student relationship
+  startDate  DateTime @default(now())
+  endDate    DateTime? // When the tutoring relationship ended
+  active     Boolean  @default(true)
+  notes      String?  // Notes specific to this tutor-student relationship
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tutor      Tutor    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sessions   Session[]
+
+  @@unique([tutorId, studentId])
+  @@index([tutorId])
+  @@index([studentId])
+  @@index([active])
+}
+
+model Session {
+  id              String   @id @default(cuid())
+  tutorStudentId  String   // Links to the specific tutor-student relationship
+  startTime       DateTime
+  endTime         DateTime
+  notes           String?
+  homework        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations through the junction table
+  tutorStudent    TutorStudent @relation(fields: [tutorStudentId], references: [id], onDelete: Cascade)
+  
+  // Direct relation to tutor for easier querying
+  tutorId         String
+  tutor           Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorStudentId, startTime], map: "idx_session_tutor_student_start")
+  @@index([tutorId, startTime], map: "idx_session_tutor_start")
+}
+
+// Optional: Track subject specializations for tutors
+model TutorSubject {
+  id        String   @id @default(cuid())
+  tutorId   String
+  subject   String
+  level     String   // e.g., "beginner", "intermediate", "advanced", "expert"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tutor     Tutor    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorId, subject])
+  @@index([tutorId])
+  @@index([subject])
+}
+
+// Add the TutorSubject relation to Tutor model
+model TutorEnhanced {
+  id               String        @id @default(cuid())
+  userId           String        @unique
+  email            String        @unique
+  stripeCustomerId String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  subscription     Subscription?
+  tutorStudents    TutorStudent[]
+  sessions         Session[]
+  subjects         TutorSubject[] // Subjects this tutor can teach
+}
