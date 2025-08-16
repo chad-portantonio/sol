@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
   if (token && type) {
     const { error } = await supabase.auth.verifyOtp({
       token_hash: token,
-      type: type as any,
+      type: type as 'signup' | 'recovery' | 'email_change',
     });
     
     if (error) {
