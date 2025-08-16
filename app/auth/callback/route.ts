@@ -115,14 +115,24 @@ export async function GET(request: NextRequest) {
 
   // Handle email confirmation flow (with token and type parameters)
   if (token && type) {
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash: token,
-      type: type as 'signup' | 'recovery' | 'email_change',
-    });
+    let authResult;
     
-    if (error) {
-      console.error('Email verification failed:', error);
-      return NextResponse.redirect(`${origin}/sign-in?error=Email verification failed: ${encodeURIComponent(error.message)}`);
+    if (type === 'magiclink') {
+      // Handle magic link verification - no need to call verifyOtp for magic links
+      // Magic links are automatically verified by Supabase when the user clicks them
+      console.log('Magic link authentication detected');
+      authResult = { error: null };
+    } else {
+      // Handle other types of verification (signup, recovery, email_change)
+      authResult = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: type as 'signup' | 'recovery' | 'email_change',
+      });
+    }
+    
+    if (authResult.error) {
+      console.error('Email verification failed:', authResult.error);
+      return NextResponse.redirect(`${origin}/sign-in?error=Email verification failed: ${encodeURIComponent(authResult.error.message)}`);
     }
     
     // Successfully confirmed email and signed in
