@@ -10,6 +10,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +22,7 @@ export default function SignUp() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -34,7 +36,7 @@ export default function SignUp() {
         setError(error.message);
       } else {
         // Show success message
-        setError("Please check your email for a magic link to sign in. The link will expire in 1 hour.");
+        setSuccess("Please check your email for a magic link to sign in. The link will expire in 1 hour.");
         // Clear form after successful signup
         setEmail("");
       }
@@ -74,12 +76,14 @@ export default function SignUp() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
           {error && (
-            <div className={`px-4 py-3 rounded-md transition-colors duration-300 duration-300 ${
-              error.includes("Account created") || error.includes("check your email")
-                ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"
-                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300"
-            }`}>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md transition-colors duration-300">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md transition-colors duration-300">
+              {success}
             </div>
           )}
 
