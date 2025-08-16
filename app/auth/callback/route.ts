@@ -9,19 +9,39 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type');
   const next = searchParams.get('next') ?? '/dashboard';
 
-  console.log('Auth callback called with:', {
-    code: code ? 'present' : 'missing',
-    token: token ? 'present' : 'missing',
-    type,
+  console.log('🔍 AUTH CALLBACK DEBUGGING:', {
+    timestamp: new Date().toISOString(),
+    fullUrl: request.url,
     origin,
-    url: request.url,
-    searchParams: Object.fromEntries(searchParams.entries())
+    domain: new URL(request.url).hostname,
+    code: code ? `present (${code.substring(0, 10)}...)` : 'missing',
+    token: token ? `present (type: ${token.startsWith('pkce_') ? 'PKCE' : 'OTP'}, ${token.substring(0, 15)}...)` : 'missing',
+    type,
+    next,
+    allParams: Object.fromEntries(searchParams.entries()),
+    headers: {
+      userAgent: request.headers.get('user-agent'),
+      referer: request.headers.get('referer'),
+      host: request.headers.get('host'),
+    }
   });
 
-  // Handle case where user might be accessing this directly from a Supabase verification URL
-  // If we have no code or token, check if we need to redirect them to the sign-in page
+  // Handle direct Supabase verification URLs that might be accessed directly
+  // If we have no code or token, but this might be a direct verification URL, handle it differently
   if (!code && !token) {
-    console.log('No auth parameters found - redirecting to sign-in');
+    console.log('⚠️ No auth parameters found in callback');
+    
+    // Check if this might be a user accessing a Supabase verification URL directly
+    const userAgent = request.headers.get('user-agent') || '';
+    const referer = request.headers.get('referer') || '';
+    
+    console.log('🔍 Checking for direct Supabase access:', { userAgent, referer });
+    
+    // If this looks like a direct browser access, provide helpful guidance
+    if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+      return NextResponse.redirect(`${origin}/sign-in?error=Magic link expired or invalid. Please request a new magic link to sign in.`);
+    }
+    
     return NextResponse.redirect(`${origin}/sign-in?message=Please request a new magic link to sign in.`);
   }
 
@@ -124,22 +144,47 @@ export async function GET(request: NextRequest) {
 
   // Handle email confirmation flow (with token and type parameters)
   if (token && type) {
-    console.log(`Processing token verification for type: ${type}`);
+    console.log(`🔐 Processing token verification for type: ${type}`);
     let authResult;
     
     if (type === 'magiclink') {
       // Handle traditional magic link verification
-      console.log('Traditional magic link authentication detected');
+      console.log('✅ Traditional magic link authentication detected');
       authResult = { error: null };
     } else if (type === 'signup' || type === 'recovery' || type === 'email_change') {
       // Handle OTP verification for signup confirmations, recovery, etc.
-      console.log(`Processing OTP verification for type: ${type}`);
-      authResult = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: type as 'signup' | 'recovery' | 'email_change',
-      });
+      console.log(`🔐 Processing OTP verification for type: ${type}`);
+      
+      try {
+        // For PKCE tokens, we need to handle them differently
+        if (token.startsWith('pkce_')) {
+          console.log('🔑 PKCE token detected - attempting session exchange');
+          
+          // PKCE tokens should be treated as authorization codes, not OTP tokens
+          // Use exchangeCodeForSession for PKCE flow
+          const { data, error } = await supabase.auth.exchangeCodeForSession(token);
+          
+          if (error) {
+            console.error('🚨 PKCE session exchange failed:', error);
+            authResult = { error };
+          } else {
+            console.log('✅ PKCE session exchange successful');
+            authResult = { data, error: null };
+          }
+        } else {
+          // Traditional OTP verification for non-PKCE tokens
+          console.log('🔐 Traditional OTP verification');
+          authResult = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as 'signup' | 'recovery' | 'email_change',
+          });
+        }
+      } catch (error) {
+        console.error('🚨 Token verification failed:', error);
+        authResult = { error: error instanceof Error ? error : new Error('Token verification failed') };
+      }
     } else {
-      console.warn(`Unknown verification type: ${type}`);
+      console.warn(`❌ Unknown verification type: ${type}`);
       authResult = { error: new Error(`Unsupported verification type: ${type}`) };
     }
     
