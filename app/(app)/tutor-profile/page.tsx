@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -69,7 +69,7 @@ export default function TutorProfilePage() {
         const response = await fetch('/api/tutors/profiles');
         if (response.ok) {
           const data = await response.json();
-          const userProfile = data.tutors.find((t: any) => t.tutor.userId === user.id);
+                     const userProfile = data.tutors.find((t: { tutor: { userId: string } }) => t.tutor.userId === user.id);
           if (userProfile) {
             setProfile({
               displayName: userProfile.displayName || '',
@@ -305,7 +305,7 @@ export default function TutorProfilePage() {
                     Subjects You Teach *
                   </label>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Select all subjects you're qualified to teach
+                    Select all subjects you&apos;re qualified to teach
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {ALL_SUBJECTS.map(subject => (
