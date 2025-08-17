@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const token = searchParams.get('token');
+  const type = searchParams.get('type');
   const next = searchParams.get('next') ?? '/dashboard';
 
   console.log('🔍 AUTH CALLBACK DEBUGGING:', {
@@ -120,7 +122,49 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}${next}`);
   }
 
+  // Handle traditional OTP/token flows (some Supabase magic-link variants)
+  if (token && type) {
+    console.log('Processing token-based verification', { maskedToken: `${token.substring(0, 10)}...`, type });
+
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              });
+            } catch {}
+          },
+        },
+      }
+    );
+
+    // Map query param types to Supabase verifyOtp types
+    const supportedTypes = new Set(['magiclink', 'recovery', 'email_change', 'signup', 'invite']);
+    const verifyType = supportedTypes.has(type) ? (type as 'magiclink' | 'recovery' | 'email_change' | 'signup' | 'invite') : 'magiclink';
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: verifyType,
+    });
+
+    if (error) {
+      console.error('Token verification failed:', { message: error.message, type: verifyType });
+      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link and try again.')}`);
+    }
+
+    console.log('Token verification successful', { userId: data?.user?.id });
+    return NextResponse.redirect(`${origin}${next}`);
+  }
+
   // If there's no code, redirect to sign-in with error message
-  console.log('No auth code found in callback URL', { url: request.url });
+  console.log('No auth parameter found in callback URL', { url: request.url });
   return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('No verification code found. Please open the most recent magic link email and try again.')}`);
 }
