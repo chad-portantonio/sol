@@ -54,7 +54,8 @@ export async function middleware(request: NextRequest) {
   if (
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/students') ||
-    request.nextUrl.pathname.startsWith('/billing')
+    request.nextUrl.pathname.startsWith('/billing') ||
+    request.nextUrl.pathname.startsWith('/tutor-profile')
   ) {
     if (!user) {
       return NextResponse.redirect(new URL('/sign-in', request.url))

@@ -85,6 +85,16 @@ export default function Navigation({ variant, activeView, onToggleView, classNam
       >
         Billing
       </Link>
+      <Link
+        href="/tutor-profile"
+        className={combineClasses(
+          'px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300',
+          isActive('/tutor-profile') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+        )}
+        aria-current={isActive('/tutor-profile') ? 'page' : undefined}
+      >
+        Profile
+      </Link>
     </>
   );
 
