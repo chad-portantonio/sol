@@ -31,9 +31,8 @@ export default function SignUp() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: process.env.NODE_ENV === 'production' 
-            ? 'https://portantonio.co/auth/callback'
-            : `${window.location.origin}/auth/callback`,
+          // Always use the current origin so the Supabase session cookies are set on the same domain
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

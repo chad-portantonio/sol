@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const url = new URL(request.url);
+  const { searchParams, origin } = url;
   const code = searchParams.get('code');
   const token = searchParams.get('token');
   const type = searchParams.get('type');
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     allParams: Object.fromEntries(searchParams.entries()),
   });
 
-  // Handle PKCE flow (magic links and OAuth)
+  // Handle PKCE flow (magic links and OAuth). Some providers send `code`, others send `token`
   if (code) {
     console.log('Processing PKCE code exchange for authentication');
     
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}${next}`);
   }
 
-  // Handle traditional OTP/token flows (some Supabase magic-link variants)
+  // Handle traditional OTP/token flows (some Supabase magic-link variants), including pkce_ tokens
   if (token && type) {
     console.log('Processing token-based verification', { maskedToken: `${token.substring(0, 10)}...`, type });
 
@@ -150,10 +151,19 @@ export async function GET(request: NextRequest) {
     const supportedTypes = new Set(['magiclink', 'recovery', 'email_change', 'signup', 'invite']);
     const verifyType = supportedTypes.has(type) ? (type as 'magiclink' | 'recovery' | 'email_change' | 'signup' | 'invite') : 'magiclink';
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: token,
-      type: verifyType,
-    });
+    const isPkce = token.startsWith('pkce_');
+    let data, error;
+    if (isPkce) {
+      // For pkce_ tokens, exchange as code/session
+      ({ error } = await supabase.auth.exchangeCodeForSession(token));
+      const userResp = await supabase.auth.getUser();
+      data = { user: userResp.data.user };
+    } else {
+      ({ data, error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: verifyType,
+      }));
+    }
 
     if (error) {
       console.error('Token verification failed:', { message: error.message, type: verifyType });
