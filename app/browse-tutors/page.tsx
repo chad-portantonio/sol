@@ -163,20 +163,20 @@ export default function BrowseTutors() {
       <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+            <Link href="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
               Nova
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <ThemeToggle />
               <Link 
                 href="/student-sign-in"
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
+                className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
               >
                 Sign In
               </Link>
               <Link 
                 href="/student-sign-up"
-                className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
               >
                 Create Account
               </Link>
@@ -186,22 +186,22 @@ export default function BrowseTutors() {
       </nav>
 
       {/* Header */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4">
+      <div className="container mx-auto px-4 py-12 sm:py-16">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-3 sm:mb-4">
             Find Your Perfect Tutor
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2">
             Browse verified tutors across all subjects. Connect with experts who care about your success.
           </p>
         </div>
 
         {/* Search and Filter */}
         <div className="max-w-4xl mx-auto mb-8">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex flex-col md:flex-row gap-6 items-end">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <div className="flex-1">
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
                   Filter by Subject
                 </label>
                 <div className="relative">
@@ -224,10 +224,10 @@ export default function BrowseTutors() {
                   </div>
                 </div>
               </div>
-              <div className="flex">
+              <div className="flex items-end">
                 <button
                   onClick={() => fetchTutors(1, searchSubject)}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Search
                 </button>
@@ -262,25 +262,25 @@ export default function BrowseTutors() {
         ) : (
           <>
             {/* Tutors Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12 sm:mb-16">
               {tutors.map((tutor) => (
-                <div key={tutor.id} className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                  <div className="text-center mb-4">
-                    <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div key={tutor.id} className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                  <div className="text-center mb-3 sm:mb-4">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       {tutor.profileImage ? (
                         <img src={tutor.profileImage} alt={tutor.displayName} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                        <span className="text-2xl font-bold text-white">
+                        <span className="text-xl sm:text-2xl font-bold text-white">
                           {tutor.displayName.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-center mb-2">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mr-2">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mr-2">
                         {tutor.displayName}
                       </h3>
                       {tutor.verified && (
-                        <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -289,42 +289,42 @@ export default function BrowseTutors() {
                       <div className="flex items-center justify-center mb-2">
                         <div className="flex text-yellow-400 mr-2">
                           {[...Array(5)].map((_, i) => (
-                            <svg key={i} className={`w-4 h-4 ${i < Math.floor(tutor.rating!) ? 'fill-current' : 'text-gray-300'}`} viewBox="0 0 20 20">
+                            <svg key={i} className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(tutor.rating!) ? 'fill-current' : 'text-gray-300'}`} viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">({tutor.rating.toFixed(1)})</span>
+                        <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">({tutor.rating.toFixed(1)})</span>
                       </div>
                     )}
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
                       {tutor.totalSessions} sessions completed
                     </div>
                   </div>
                   
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-2 justify-center mb-4">
+                  <div className="mb-3 sm:mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 justify-center mb-3 sm:mb-4">
                       {tutor.subjects.slice(0, 3).map((subject) => (
-                        <span key={subject} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                        <span key={subject} className="px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm font-medium">
                           {subject}
                         </span>
                       ))}
                       {tutor.subjects.length > 3 && (
-                        <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-sm">
+                        <span className="px-2 sm:px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs sm:text-sm">
                           +{tutor.subjects.length - 3} more
                         </span>
                       )}
                     </div>
                     
                     {tutor.bio && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 text-center line-clamp-3 mb-4">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center line-clamp-3 mb-3 sm:mb-4 px-2">
                         {tutor.bio}
                       </p>
                     )}
                     
                     {tutor.hourlyRate && (
-                      <div className="text-center mb-4">
-                        <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                      <div className="text-center mb-3 sm:mb-4">
+                        <span className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400">
                           {tutor.hourlyRate}
                         </span>
                       </div>
