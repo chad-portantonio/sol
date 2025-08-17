@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         stack: error.stack,
         hint: 'Ensure the site URL and redirect URLs are correctly configured in Supabase Auth settings.'
       });
-      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link or ensure you used the most recent email.')}`);
+      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link or ensure you used the most recent email.')}&email=${encodeURIComponent(searchParams.get('email') || '')}`);
     }
     
     // Successfully authenticated
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}${next}`);
   }
 
-  // Handle traditional OTP/token flows (some Supabase magic-link variants), including pkce_ tokens
+  // Handle traditional OTP/token flows (some Supabase magic-link variants)
   if (token && type) {
     console.log('Processing token-based verification', { maskedToken: `${token.substring(0, 10)}...`, type });
 
@@ -151,30 +151,55 @@ export async function GET(request: NextRequest) {
     const supportedTypes = new Set(['magiclink', 'recovery', 'email_change', 'signup', 'invite']);
     const verifyType = supportedTypes.has(type) ? (type as 'magiclink' | 'recovery' | 'email_change' | 'signup' | 'invite') : 'magiclink';
 
-    const isPkce = token.startsWith('pkce_');
-    let data, error;
-    if (isPkce) {
-      // For pkce_ tokens, exchange as code/session
-      ({ error } = await supabase.auth.exchangeCodeForSession(token));
-      const userResp = await supabase.auth.getUser();
-      data = { user: userResp.data.user };
-    } else {
-      ({ data, error } = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: verifyType,
-      }));
-    }
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: verifyType,
+    });
 
     if (error) {
       console.error('Token verification failed:', { message: error.message, type: verifyType });
-      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link and try again.')}`);
+      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link and try again.')}&email=${encodeURIComponent(searchParams.get('email') || '')}`);
     }
 
     console.log('Token verification successful', { userId: data?.user?.id });
+
+    // Provision profile similar to the PKCE branch
+    try {
+      const { data: userResp } = await supabase.auth.getUser();
+      const user = userResp.user;
+      if (user) {
+        const isStudentFlow = user.user_metadata?.role === 'student' || user.user_metadata?.role === 'parent';
+        if (isStudentFlow) {
+          const role = user.user_metadata?.role || 'student';
+          await fetch(`${origin}/api/student-accounts/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+              fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || (role === 'parent' ? 'Parent' : 'Student'),
+              preferredSubjects: user.user_metadata?.preferred_subjects || [],
+              gradeLevel: user.user_metadata?.grade_level || null,
+              bio: user.user_metadata?.bio || null,
+              role,
+              studentId: user.user_metadata?.student_id || null,
+            }),
+          });
+        } else {
+          await fetch(`${origin}/api/tutors/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, email: user.email }),
+          });
+        }
+      }
+    } catch (provisionErr) {
+      console.warn('Profile provisioning after token verification failed (continuing):', provisionErr);
+    }
     return NextResponse.redirect(`${origin}${next}`);
   }
 
   // If there's no code, redirect to sign-in with error message
   console.log('No auth parameter found in callback URL', { url: request.url });
-  return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('No verification code found. Please open the most recent magic link email and try again.')}`);
+  return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('No verification code found. Please open the most recent magic link email and try again.')}&email=${encodeURIComponent(searchParams.get('email') || '')}`);
 }

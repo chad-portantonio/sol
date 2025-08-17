@@ -26,11 +26,16 @@ export default function SignIn() {
     const urlParams = new URLSearchParams(window.location.search);
     const errorParam = urlParams.get('error');
     const messageParam = urlParams.get('message');
+    const emailParam = urlParams.get('email');
     
     if (errorParam) {
       setError(errorParam);
     } else if (messageParam) {
       setError(messageParam);
+    }
+
+    if (emailParam) {
+      setEmail(emailParam);
     }
   }, []);
 
