@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const createSessionSchema = z.object({
   studentId: z.string().min(1, 'Student ID is required'),
-  subject: z.string().min(1, 'Subject is required'),
+  subject: z.string().optional(),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
   notes: z.string().optional(),
@@ -44,17 +45,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the session
     const session = await prisma.session.create({
-      data: {
+      data: ({
         studentId: validatedData.studentId,
-        subject: validatedData.subject,
         startTime,
         endTime,
-        status: 'scheduled',
-        notes: validatedData.notes || null,
-        homework: validatedData.homework || null,
-      },
+        notes: validatedData.notes ?? null,
+        homework: validatedData.homework ?? null,
+        ...(validatedData.subject ? { subject: validatedData.subject } : {}),
+      }) as unknown as Prisma.SessionUncheckedCreateInput,
       include: {
         student: {
           select: {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { Pool } from 'pg';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,66 +26,137 @@ export async function POST(request: NextRequest) {
 
     console.log('🚀 Starting critical database migration...');
 
-    // Test connection first
-    await prisma.$connect();
-    console.log('✅ Database connected successfully');
+    // Use direct PostgreSQL connection to avoid Prisma prepared statement conflicts
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
 
-    // CRITICAL FIX 1: Add missing email column to Student table
+    let client;
     try {
-      await prisma.$executeRaw`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "email" text`;
-      console.log('✅ Added email column to Student table');
-    } catch (e: any) {
-      if (e.message?.includes('already exists') || e.message?.includes('duplicate column')) {
-        console.log('✅ Email column already exists in Student table');
-      } else {
-        console.error('❌ Failed to add email column:', e.message);
-        throw e;
-      }
-    }
+      client = await pool.connect();
+      console.log('✅ Direct database connection established');
 
-    // CRITICAL FIX 2: Create unique index for email
-    try {
-      await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "idx_student_email" ON "Student" ("email")`;
-      console.log('✅ Created unique index on Student.email');
-    } catch (e: any) {
-      if (e.message?.includes('already exists')) {
-        console.log('✅ Email index already exists');
-      } else {
-        console.log('ℹ️ Could not create email index (may be expected):', e.message);
+      // CRITICAL FIX 1: Add missing preferredSubjects column to Student table
+      try {
+        await client.query('ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "preferredSubjects" text[] DEFAULT \'{}\'');
+        console.log('✅ Added preferredSubjects column to Student table');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+          console.log('✅ preferredSubjects column already exists in Student table');
+        } else {
+          console.error('❌ Failed to add preferredSubjects column:', error.message);
+          throw error;
+        }
       }
-    }
 
-    // CRITICAL FIX 3: Create missing TutorProfile table
-    try {
-      await prisma.$executeRaw`
-        CREATE TABLE IF NOT EXISTS "TutorProfile" (
-          "id"           text PRIMARY KEY,
-          "tutorId"      text UNIQUE NOT NULL,
-          "displayName"  text NOT NULL,
-          "bio"          text,
-          "subjects"     text[] DEFAULT '{}',
-          "experience"   text,
-          "hourlyRate"   text,
-          "availability" text,
-          "profileImage" text,
-          "rating"       double precision,
-          "totalReviews" integer NOT NULL DEFAULT 0,
-          "totalSessions" integer NOT NULL DEFAULT 0,
-          "verified"     boolean NOT NULL DEFAULT false,
-          "active"       boolean NOT NULL DEFAULT true,
-          "createdAt"    timestamptz NOT NULL DEFAULT now(),
-          "updatedAt"    timestamptz NOT NULL DEFAULT now(),
-          CONSTRAINT "TutorProfile_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "Tutor"("id") ON DELETE CASCADE
-        )
-      `;
-      console.log('✅ Created TutorProfile table');
-    } catch (e: any) {
-      if (e.message?.includes('already exists')) {
-        console.log('✅ TutorProfile table already exists');
-      } else {
-        console.error('❌ Failed to create TutorProfile table:', e.message);
-        throw e;
+      // CRITICAL FIX 2: Add missing bio column to Student table
+      try {
+        await client.query('ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "bio" text');
+        console.log('✅ Added bio column to Student table');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+          console.log('✅ bio column already exists in Student table');
+        } else {
+          console.error('❌ Failed to add bio column:', error.message);
+          throw error;
+        }
       }
+
+      // CRITICAL FIX 3: Add missing gradeLevel column to Student table
+      try {
+        await client.query('ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "gradeLevel" text');
+        console.log('✅ Added gradeLevel column to Student table');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+          console.log('✅ gradeLevel column already exists in Student table');
+        } else {
+          console.error('❌ Failed to add gradeLevel column:', error.message);
+          throw error;
+        }
+      }
+
+      // CRITICAL FIX 4: Add missing email column to Student table (if needed)
+      try {
+        await client.query('ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "email" text');
+        console.log('✅ Added email column to Student table');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+          console.log('✅ Email column already exists in Student table');
+        } else {
+          console.error('❌ Failed to add email column:', error.message);
+          throw error;
+        }
+      }
+
+      // CRITICAL FIX 5: Create unique index for email
+      try {
+        await client.query('CREATE UNIQUE INDEX IF NOT EXISTS "idx_student_email" ON "Student" ("email")');
+        console.log('✅ Created unique index on Student.email');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists')) {
+          console.log('✅ Email index already exists');
+        } else {
+          console.log('ℹ️ Could not create email index (may be expected):', error.message);
+        }
+      }
+
+      // CRITICAL FIX 6: Create missing TutorProfile table
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS "TutorProfile" (
+            "id"           text PRIMARY KEY,
+            "tutorId"      text UNIQUE NOT NULL,
+            "displayName"  text NOT NULL,
+            "bio"          text,
+            "subjects"     text[] DEFAULT '{}',
+            "experience"   text,
+            "hourlyRate"   text,
+            "availability" text,
+            "profileImage" text,
+            "rating"       double precision,
+            "totalReviews" integer NOT NULL DEFAULT 0,
+            "totalSessions" integer NOT NULL DEFAULT 0,
+            "verified"     boolean NOT NULL DEFAULT false,
+            "active"       boolean NOT NULL DEFAULT true,
+            "createdAt"    timestamptz NOT NULL DEFAULT now(),
+            "updatedAt"    timestamptz NOT NULL DEFAULT now(),
+            CONSTRAINT "TutorProfile_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "Tutor"("id") ON DELETE CASCADE
+          )
+        `);
+        console.log('✅ Created TutorProfile table');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('already exists')) {
+          console.log('✅ TutorProfile table already exists');
+        } else {
+          console.error('❌ Failed to create TutorProfile table:', error.message);
+          throw error;
+        }
+      }
+
+      // CRITICAL FIX 7: Relax NOT NULL on Student.tutorId to support independent students
+      try {
+        await client.query('ALTER TABLE "Student" ALTER COLUMN "tutorId" DROP NOT NULL');
+        console.log('✅ Relaxed NOT NULL constraint on Student.tutorId');
+      } catch (e: unknown) {
+        const error = e as Error;
+        if (error.message?.includes('cannot alter') || error.message?.includes('does not exist')) {
+          console.log('ℹ️ Could not alter tutorId nullability (may already be nullable)');
+        } else {
+          console.log('ℹ️ tutorId nullability change may not be required:', error.message);
+        }
+      }
+
+    } finally {
+      if (client) {
+        client.release();
+      }
+      await pool.end();
     }
 
     console.log('✅ Critical migration completed!');
@@ -94,6 +165,9 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Critical database migration completed successfully',
       critical_fixes: [
+        'Student.preferredSubjects column added',
+        'Student.bio column added',
+        'Student.gradeLevel column added',
         'Student.email column added',
         'Student.email unique index created', 
         'TutorProfile table created'
@@ -112,8 +186,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

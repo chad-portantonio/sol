@@ -154,10 +154,5 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create student account' },
       { status: 500 }
     );
-  } finally {
-    // Ensure connection cleanup
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect();
-    }
   }
 }

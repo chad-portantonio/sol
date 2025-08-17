@@ -1,10 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
+import Navigation from '@/components/navigation';
 
 export default function Home() {
   const router = useRouter();
@@ -44,63 +44,42 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950 transition-colors duration-300">
-      {/* Navigation */}
-      <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-300">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-              Nova
-            </div>
-            
-            {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setActiveView('student')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
-                  activeView === 'student'
-                    ? 'bg-green-500 text-white shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                I&apos;m a Student
-              </button>
-              <button
-                onClick={() => setActiveView('tutor')}
-                className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
-                  activeView === 'tutor'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                I&apos;m a Tutor
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-              <Link 
-                href={activeView === 'student' ? "/student-sign-in" : "/sign-in"}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
-              >
-                Sign In
-              </Link>
-              <Link 
-                href={activeView === 'student' ? "/student-sign-up" : "/sign-up"}
-                className={`px-4 py-2 ${
-                  activeView === 'student' 
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                } dark:from-blue-500 dark:to-blue-600 text-white rounded-lg font-medium dark:hover:from-blue-600 dark:hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
-              >
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        variant="public"
+        activeView={activeView}
+        onToggleView={setActiveView}
+      />
 
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
+        {/* Student/Tutor Toggle above hero */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setActiveView('student')}
+              className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                activeView === 'student'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              aria-pressed={activeView === 'student'}
+            >
+              I&apos;m a Student
+            </button>
+            <button
+              onClick={() => setActiveView('tutor')}
+              className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                activeView === 'tutor'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              aria-pressed={activeView === 'tutor'}
+            >
+              I&apos;m a Tutor
+            </button>
+          </div>
+        </div>
+        
         <div className={`text-center max-w-5xl mx-auto transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {/* Hero Title */}
           <div className="relative mb-8">

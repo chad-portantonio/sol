@@ -70,10 +70,6 @@ export async function GET() {
       { error: 'Failed to fetch student account' },
       { status: 500 }
     );
-  } finally {
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect();
-    }
   }
 }
 
@@ -147,9 +143,5 @@ export async function PATCH(request: NextRequest) {
       { error: 'Failed to update student account' },
       { status: 500 }
     );
-  } finally {
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect();
-    }
   }
 }

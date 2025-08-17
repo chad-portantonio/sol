@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useState } from "react";
 import Link from "next/link";
@@ -42,6 +43,7 @@ export default function SignUp() {
         // Show success message
         setSuccess("We sent you a magic link. Please check your email. The link expires in 1 hour.");
         setSentTo(email);
+        setEmail('');
         setStage('sent');
       }
     } catch (error) {

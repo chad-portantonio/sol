@@ -79,10 +79,6 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch tutor profiles' },
       { status: 500 }
     );
-  } finally {
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect();
-    }
   }
 }
 
@@ -162,9 +158,5 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to save tutor profile' },
       { status: 500 }
     );
-  } finally {
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect();
-    }
   }
 }
