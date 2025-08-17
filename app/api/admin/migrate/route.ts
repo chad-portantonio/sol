@@ -26,10 +26,15 @@ export async function POST(request: NextRequest) {
 
     console.log('🚀 Starting production database migration...');
 
-    // Add phone columns (idempotent)
+    // Add phone columns (idempotent) - only to tables that exist
     await prisma.$executeRawUnsafe(`ALTER TABLE "Tutor"   ADD COLUMN IF NOT EXISTS "phone" text;`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "phone" text;`);
-    await prisma.$executeRawUnsafe(`ALTER TABLE "Parent"  ADD COLUMN IF NOT EXISTS "phone" text;`);
+    // Skip Parent table if it doesn't exist yet
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Parent"  ADD COLUMN IF NOT EXISTS "phone" text;`);
+    } catch (e) {
+      console.log('Parent table not found, skipping phone column addition');
+    }
 
     // CRITICAL: Add missing email column to Student table
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "email" text;`);
