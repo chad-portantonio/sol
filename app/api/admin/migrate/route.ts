@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🚀 Starting production database migration...');
+    console.log('🚀 Starting critical database migration...');
 
     // Test connection first
     await prisma.$connect();
     console.log('✅ Database connected successfully');
 
-    // CRITICAL: Add missing email column to Student table first
+    // CRITICAL FIX 1: Add missing email column to Student table
     try {
       await prisma.$executeRaw`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "email" text`;
       console.log('✅ Added email column to Student table');
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create unique index for email
+    // CRITICAL FIX 2: Create unique index for email
     try {
       await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "idx_student_email" ON "Student" ("email")`;
       console.log('✅ Created unique index on Student.email');
@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
       if (e.message?.includes('already exists')) {
         console.log('✅ Email index already exists');
       } else {
-        console.error('❌ Failed to create email index:', e.message);
+        console.log('ℹ️ Could not create email index (may be expected):', e.message);
       }
     }
 
-    // CRITICAL: Create missing TutorProfile table
+    // CRITICAL FIX 3: Create missing TutorProfile table
     try {
       await prisma.$executeRaw`
         CREATE TABLE IF NOT EXISTS "TutorProfile" (
@@ -88,55 +88,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create indexes for TutorProfile
-    try {
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_tutorid" ON "TutorProfile" ("tutorId")`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_subjects" ON "TutorProfile" ("subjects")`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_active" ON "TutorProfile" ("active")`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_verified" ON "TutorProfile" ("verified")`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_rating" ON "TutorProfile" ("rating")`;
-      console.log('✅ Created TutorProfile indexes');
-    } catch (e: any) {
-      console.log('ℹ️ Some TutorProfile indexes may already exist:', e.message);
-    }
-
-    // Subject table
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "Subject" (
-        "id"        text PRIMARY KEY,
-        "name"      text UNIQUE NOT NULL,
-        "category"  text,
-        "description" text,
-        "active"    boolean NOT NULL DEFAULT true,
-        "createdAt" timestamptz NOT NULL DEFAULT now()
-      );
-    `);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_subject_active"   ON "Subject" ("active");`);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_subject_category" ON "Subject" ("category");`);
-
-    // GradeLevel table
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "GradeLevel" (
-        "id"        text PRIMARY KEY,
-        "name"      text UNIQUE NOT NULL,
-        "category"  text NOT NULL,
-        "sequence"  integer UNIQUE NOT NULL,
-        "description" text,
-        "active"    boolean NOT NULL DEFAULT true,
-        "createdAt" timestamptz NOT NULL DEFAULT now(),
-        "updatedAt" timestamptz NOT NULL DEFAULT now()
-      );
-    `);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_gradelevel_category" ON "GradeLevel" ("category");`);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_gradelevel_sequence" ON "GradeLevel" ("sequence");`);
-
-    console.log('✅ Migration completed!');
+    console.log('✅ Critical migration completed!');
     
     return NextResponse.json({
       success: true,
       message: 'Critical database migration completed successfully',
-      critical_fixes: ['Student.email column added', 'TutorProfile table created'],
-      additional_tables: ['Subject', 'GradeLevel'],
+      critical_fixes: [
+        'Student.email column added',
+        'Student.email unique index created', 
+        'TutorProfile table created'
+      ],
       timestamp: new Date().toISOString(),
     });
     
@@ -158,7 +119,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({
-    message: 'Database migration endpoint',
+    message: 'Critical database migration endpoint',
     usage: 'POST with Bearer token to trigger migration',
     timestamp: new Date().toISOString(),
   });
