@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
         studentId: validatedData.studentId,
         startTime,
         endTime,
+        subject: validatedData.subject ?? 'General', // Always provide subject with default
         notes: validatedData.notes ?? null,
         homework: validatedData.homework ?? null,
-        ...(validatedData.subject ? { subject: validatedData.subject } : {}),
       }) as unknown as Prisma.SessionUncheckedCreateInput,
       include: {
         student: {
