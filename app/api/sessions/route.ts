@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
         subject: validatedData.subject,
         startTime,
         endTime,
+        status: 'scheduled',
         notes: validatedData.notes || null,
         homework: validatedData.homework || null,
-      },
+      } as any, // Temporary type assertion while Prisma types sync
       include: {
         student: {
           select: {

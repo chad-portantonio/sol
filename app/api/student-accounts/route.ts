@@ -115,7 +115,8 @@ export async function PATCH(request: NextRequest) {
     const updateData = await request.json();
     
     // Remove fields that shouldn't be updated  
-    const { userId: _userId, email: _email, createdAt: _createdAt, ...allowedUpdates } = updateData;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { userId, email, createdAt, ...allowedUpdates } = updateData;
 
     // Update the student account
     const updatedStudent = await prisma.student.update({

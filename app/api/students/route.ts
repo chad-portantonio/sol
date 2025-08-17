@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 const STUDENT_ACTIVE_LIMIT = 20;
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
-import { Student } from '@/lib/types';
+// Remove unused type import - use Prisma types directly
 
 const createStudentSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check active student limit
-    const activeStudents = tutor.students.filter((student: Student) => student.active);
+    const activeStudents = tutor.students.filter(student => student.active);
     if (activeStudents.length >= STUDENT_ACTIVE_LIMIT) {
       return NextResponse.json(
         { error: `Cannot exceed ${STUDENT_ACTIVE_LIMIT} active students` },

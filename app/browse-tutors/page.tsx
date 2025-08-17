@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import ConnectTutorModal from "@/components/connect-tutor-modal";
-import { createBrowserClient } from "@supabase/ssr";
+
 
 interface TutorProfile {
   id: string;
