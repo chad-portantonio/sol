@@ -24,17 +24,17 @@ export default function AnimatedStarfield() {
         {/* Medium stars scattered around - with color variations */}
         {[
           { top: '20%', left: '25%', delay: '0s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' },
-          { top: '15%', left: '75%', delay: '0.1s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
-          { top: '80%', left: '20%', delay: '0.2s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
-          { top: '85%', left: '80%', delay: '0.3s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' },
-          { top: '35%', left: '15%', delay: '0.4s', size: 'w-2 h-2', color: 'lightcoral', animation: 'starTwinkleRed' },
-          { top: '70%', left: '85%', delay: '0.5s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
-          { top: '45%', left: '90%', delay: '0.5s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
-          { top: '55%', left: '10%', delay: '0.15s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' },
-          { top: '25%', left: '50%', delay: '0.25s', size: 'w-2 h-2', color: 'lightcoral', animation: 'starTwinkleRed' },
-          { top: '75%', left: '50%', delay: '0.35s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
-          { top: '50%', left: '20%', delay: '0.45s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
-          { top: '50%', left: '80%', delay: '0.55s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' }
+          { top: '15%', left: '75%', delay: '0.02s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
+          { top: '80%', left: '20%', delay: '0.04s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
+          { top: '85%', left: '80%', delay: '0.06s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' },
+          { top: '35%', left: '15%', delay: '0.08s', size: 'w-2 h-2', color: 'lightcoral', animation: 'starTwinkleRed' },
+          { top: '70%', left: '85%', delay: '0.1s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
+          { top: '45%', left: '90%', delay: '0.12s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
+          { top: '55%', left: '10%', delay: '0.03s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' },
+          { top: '25%', left: '50%', delay: '0.05s', size: 'w-2 h-2', color: 'lightcoral', animation: 'starTwinkleRed' },
+          { top: '75%', left: '50%', delay: '0.07s', size: 'w-2 h-2', color: 'lightblue', animation: 'starTwinkleBlue' },
+          { top: '50%', left: '20%', delay: '0.09s', size: 'w-2 h-2', color: 'lightyellow', animation: 'starTwinkleYellow' },
+          { top: '50%', left: '80%', delay: '0.11s', size: 'w-2 h-2', color: 'white', animation: 'starTwinkle' }
         ].map((star, index) => (
           <div
             key={index}
@@ -78,7 +78,7 @@ export default function AnimatedStarfield() {
               top: star.top,
               left: star.left,
               backgroundColor: star.color,
-              animation: `${star.animation} 0.8s ease-in-out ${index * 0.05}s forwards`
+              animation: `${star.animation} 0.8s ease-in-out ${index * 0.015}s forwards`
             }}
           ></div>
         ))}
@@ -113,7 +113,7 @@ export default function AnimatedStarfield() {
               top: star.top,
               left: star.left,
               backgroundColor: star.color,
-              animation: `${star.animation} 1s ease-in-out ${index * 0.02}s forwards`
+              animation: `${star.animation} 1s ease-in-out ${index * 0.008}s forwards`
             }}
           ></div>
         ))}
