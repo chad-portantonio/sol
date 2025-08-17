@@ -145,16 +145,21 @@ export async function GET(request: NextRequest) {
           if (response.ok) {
             console.log('Tutor profile created successfully');
             
-            // Create a basic tutor profile so they appear in browse results
-            try {
-              const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Tutor';
-              const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
-              
-              const profileResponse = await fetch(`${origin}/api/tutors/profiles`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  tutorId: user.id,
+            // Get the created tutor record to get the correct tutor ID
+            const tutorData = await response.json();
+            const tutorId = tutorData.tutor?.id;
+            
+            if (tutorId) {
+              // Create a basic tutor profile so they appear in browse results
+              try {
+                const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Tutor';
+                const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+                
+                const profileResponse = await fetch(`${origin}/api/tutors/profiles`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    tutorId: user.id, // This is correct - we want the Supabase user ID
                   displayName: displayName,
                   subjects: ['Mathematics'], // Default subject
                   profileImage: avatarUrl, // Cartoon avatar instead of placeholder
@@ -177,6 +182,7 @@ export async function GET(request: NextRequest) {
             } catch (profileError) {
               console.warn('Error creating basic tutor profile:', profileError);
             }
+            } // Close the if (tutorId) block
           } else if (response.status === 409) {
             console.log('Tutor profile already exists');
           } else {

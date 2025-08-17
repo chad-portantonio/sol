@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Check if tutor exists
     const tutor = await prisma.tutor.findUnique({
-      where: { id: tutorId }
+      where: { userId: tutorId }
     });
 
     if (!tutor) {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     // Upsert the tutor profile
     const tutorProfile = await prisma.tutorProfile.upsert({
-      where: { tutorId },
+      where: { tutorId: tutor.id },
       update: {
         displayName,
         bio: bio || null,
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
         address: address || null,
       },
       create: {
-        tutorId,
+        tutorId: tutor.id,
         displayName,
         bio: bio || null,
         subjects,
