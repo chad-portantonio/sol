@@ -45,8 +45,13 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (error) {
-      console.error('Auth code exchange failed:', error);
-      return NextResponse.redirect(`${origin}/sign-in?error=Authentication failed: ${encodeURIComponent(error.message)}`);
+      console.error('Auth code exchange failed:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        hint: 'Ensure the site URL and redirect URLs are correctly configured in Supabase Auth settings.'
+      });
+      return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('Authentication failed. Please request a new magic link or ensure you used the most recent email.')}`);
     }
     
     // Successfully authenticated
@@ -116,6 +121,6 @@ export async function GET(request: NextRequest) {
   }
 
   // If there's no code, redirect to sign-in with error message
-  console.log('No auth code found in callback URL');
-  return NextResponse.redirect(`${origin}/sign-in?error=No verification code found. Please check your email link.`);
+  console.log('No auth code found in callback URL', { url: request.url });
+  return NextResponse.redirect(`${origin}/sign-in?error=${encodeURIComponent('No verification code found. Please open the most recent magic link email and try again.')}`);
 }
