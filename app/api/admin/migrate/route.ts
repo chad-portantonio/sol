@@ -12,20 +12,24 @@ export async function POST(request: NextRequest) {
     
     console.log('🚀 Starting production database migration...');
     
+    // Check if Session.subject column exists
+    try {
+      await prisma.$queryRaw`SELECT "subject" FROM "Session" LIMIT 1`;
+      console.log('✅ Session.subject column already exists');
+    } catch (error) {
+      console.log('❌ Session.subject column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "subject" TEXT NOT NULL DEFAULT 'General'`;
+      console.log('✅ Session.subject column added');
+    }
+    
     // Check if Session.tutorId column exists
     try {
       await prisma.$queryRaw`SELECT "tutorId" FROM "Session" LIMIT 1`;
       console.log('✅ Session.tutorId column already exists');
     } catch (error) {
-      console.log('❌ Session.tutorId column missing, adding it...');
-      
-      // Add the missing tutorId column to Session table
+      console.log('❌ Session.tutorId column missing - adding it now...');
       await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "tutorId" TEXT`;
-      console.log('✅ Added Session.tutorId column');
-      
-      // Add index for performance
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_tutorId_idx" ON "Session"("tutorId")`;
-      console.log('✅ Added index on Session.tutorId');
+      console.log('✅ Session.tutorId column added');
     }
     
     // Check if Session.connectionId column exists
@@ -33,15 +37,9 @@ export async function POST(request: NextRequest) {
       await prisma.$queryRaw`SELECT "connectionId" FROM "Session" LIMIT 1`;
       console.log('✅ Session.connectionId column already exists');
     } catch (error) {
-      console.log('❌ Session.connectionId column missing, adding it...');
-      
-      // Add the missing connectionId column to Session table
+      console.log('❌ Session.connectionId column missing - adding it now...');
       await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "connectionId" TEXT`;
-      console.log('✅ Added Session.connectionId column');
-      
-      // Add index for performance
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_connectionId_idx" ON "Session"("connectionId")`;
-      console.log('✅ Added index on Session.connectionId');
+      console.log('✅ Session.connectionId column added');
     }
     
     // Check if Session.title column exists
@@ -49,23 +47,39 @@ export async function POST(request: NextRequest) {
       await prisma.$queryRaw`SELECT "title" FROM "Session" LIMIT 1`;
       console.log('✅ Session.title column already exists');
     } catch (error) {
-      console.log('❌ Session.title column missing, adding it...');
-      
-      // Add the missing title column to Session table
+      console.log('❌ Session.title column missing - adding it now...');
       await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "title" TEXT`;
-      console.log('✅ Added Session.title column');
+      console.log('✅ Session.title column added');
+    }
+    
+    // Check if Session.notes column exists
+    try {
+      await prisma.$queryRaw`SELECT "notes" FROM "Session" LIMIT 1`;
+      console.log('✅ Session.notes column already exists');
+    } catch (error) {
+      console.log('❌ Session.notes column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "notes" TEXT`;
+      console.log('✅ Session.notes column added');
+    }
+    
+    // Check if Session.homework column exists
+    try {
+      await prisma.$queryRaw`SELECT "homework" FROM "Session" LIMIT 1`;
+      console.log('✅ Session.homework column already exists');
+    } catch (error) {
+      console.log('❌ Session.homework column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "homework" TEXT`;
+      console.log('✅ Session.homework column added');
     }
     
     // Check if Session.location column exists
     try {
       await prisma.$queryRaw`SELECT "location" FROM "Session" LIMIT 1`;
-      console.log('❌ Session.location column missing, adding it...');
-      
-      // Add the missing location column to Session table
-      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "location" TEXT`;
-      console.log('✅ Added Session.location column');
-    } catch (error) {
       console.log('✅ Session.location column already exists');
+    } catch (error) {
+      console.log('❌ Session.location column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "location" TEXT`;
+      console.log('✅ Session.location column added');
     }
     
     // Check if Session.meetingLink column exists
@@ -73,41 +87,60 @@ export async function POST(request: NextRequest) {
       await prisma.$queryRaw`SELECT "meetingLink" FROM "Session" LIMIT 1`;
       console.log('✅ Session.meetingLink column already exists');
     } catch (error) {
-      console.log('❌ Session.meetingLink column missing, adding it...');
-      
-      // Add the missing meetingLink column to Session table
+      console.log('❌ Session.meetingLink column missing - adding it now...');
       await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "meetingLink" TEXT`;
-      console.log('✅ Added Session.meetingLink column');
+      console.log('✅ Session.meetingLink column added');
     }
     
-    console.log('✅ Schema changes applied successfully');
-    console.log('✅ Migration completed!');
+    // Check if Session.status column exists
+    try {
+      await prisma.$queryRaw`SELECT "status" FROM "Session" LIMIT 1`;
+      console.log('✅ Session.status column already exists');
+    } catch (error) {
+      console.log('❌ Session.status column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'scheduled'`;
+      console.log('✅ Session.status column added');
+    }
     
-    // Verify the Tutor table structure
-    const tutorCount = await prisma.tutor.count();
-    console.log(`📈 Current tutor count: ${tutorCount}`);
+    // Check if Session.endTime column exists
+    try {
+      await prisma.$queryRaw`SELECT "endTime" FROM "Session" LIMIT 1`;
+      console.log('✅ Session.endTime column already exists');
+    } catch (error) {
+      console.log('❌ Session.endTime column missing - adding it now...');
+      await prisma.$executeRaw`ALTER TABLE "Session" ADD COLUMN "endTime" TIMESTAMP`;
+      console.log('✅ Session.endTime column added');
+    }
     
-    // Verify the Session table structure
-    const sessionCount = await prisma.session.count();
-    console.log(`📈 Current session count: ${sessionCount}`);
+    // Add indexes for performance
+    console.log('🔍 Adding database indexes...');
+    
+    try {
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_tutorId_idx" ON "Session"("tutorId")`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_connectionId_idx" ON "Session"("connectionId")`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_startTime_idx" ON "Session"("startTime")`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_status_idx" ON "Session"("status")`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_subject_idx" ON "Session"("subject")`;
+      console.log('✅ Database indexes added');
+    } catch (error) {
+      console.log('⚠️ Some indexes may already exist:', error instanceof Error ? error.message : 'Unknown error');
+    }
+    
+    console.log('🎉 Production database migration completed successfully!');
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Migration completed successfully',
-      tutorCount,
-      sessionCount
+      message: 'Database migration completed successfully',
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
     console.error('❌ Migration failed:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Migration failed', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
