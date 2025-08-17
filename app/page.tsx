@@ -3,14 +3,44 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
   const [activeView, setActiveView] = useState<'student' | 'tutor'>('student'); // Student view prioritized
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Handle magic-link responses that arrive as URL hash fragments at the site root
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.location.hash) return;
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    const type = params.get('type');
+    if (access_token && refresh_token && (type === 'magiclink' || type === 'recovery' || type === 'signup')) {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      supabase.auth.setSession({ access_token, refresh_token })
+        .then(({ error }) => {
+          // Clean the hash from the URL
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+          if (!error) {
+            router.replace('/dashboard');
+          }
+        })
+        .catch(() => {
+          // Ignore; user can still sign in again
+        });
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950 transition-colors duration-300">
