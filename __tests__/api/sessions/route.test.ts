@@ -43,6 +43,7 @@ describe('/api/sessions', () => {
   describe('POST - Create Session', () => {
     const validSessionData = {
       studentId: 'test-student-id',
+      subject: 'Mathematics',
       startTime: '2024-12-20T10:00:00.000Z',
       endTime: '2024-12-20T11:00:00.000Z',
       notes: 'Covered algebra basics',
@@ -97,8 +98,10 @@ describe('/api/sessions', () => {
       expect(mockPrisma.session.create).toHaveBeenCalledWith({
         data: {
           studentId: validSessionData.studentId,
+          subject: validSessionData.subject,
           startTime: new Date(validSessionData.startTime),
           endTime: new Date(validSessionData.endTime),
+          status: 'scheduled',
           notes: validSessionData.notes,
           homework: validSessionData.homework,
         },

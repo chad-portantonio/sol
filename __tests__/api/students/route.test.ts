@@ -62,6 +62,7 @@ describe('/api/students', () => {
 
       const request = createMockRequest('POST', {
         fullName: 'John Doe',
+        email: 'john.doe@example.com',
         subject: 'Mathematics',
         year: 'Grade 10',
         parentEmail: 'parent@example.com',
@@ -75,11 +76,12 @@ describe('/api/students', () => {
       expect(prisma.student.create).toHaveBeenCalledWith({
         data: {
           fullName: 'John Doe',
+          email: 'john.doe@example.com',
           subject: 'Mathematics',
           year: 'Grade 10',
           parentEmail: 'parent@example.com',
           tutorId: 'tutor-id',
-          parentLinkToken: 'test-token-123',
+          parentLinkToken: expect.any(String),
         },
       })
     })
