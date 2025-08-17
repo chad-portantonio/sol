@@ -2,6 +2,7 @@ export interface Student {
   id: string;
   userId?: string | null;
   email: string;
+  phone?: string | null;
   fullName: string;
   preferredSubjects: string[];
   gradeLevel?: string | null;
@@ -42,6 +43,7 @@ export interface Tutor {
   id: string;
   userId: string;
   email: string;
+  phone?: string | null;
   createdAt: Date;
   updatedAt: Date;
   students?: Student[];

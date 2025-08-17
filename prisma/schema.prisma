@@ -11,6 +11,7 @@ model Tutor {
   id                   String                     @id @default(cuid())
   userId               String                     @unique // Supabase auth.users.id
   email                String                     @unique
+  phone                String?                    // Phone number for SMS authentication
   stripeCustomerId     String?
   createdAt            DateTime                   @default(now())
   updatedAt            DateTime                   @updatedAt
@@ -45,6 +46,7 @@ model Student {
   id                String               @id @default(cuid())
   userId            String?              @unique // Supabase auth.users.id (null for tutor-created)
   email             String               @unique
+  phone             String?              // Phone number for SMS authentication
   fullName          String
   preferredSubjects String[]             @default([]) // Array of subjects
   gradeLevel        String?              // "Grade 10", "University Year 1", etc.
@@ -130,6 +132,7 @@ model Parent {
   id        String   @id @default(cuid())
   userId    String   @unique // Supabase auth.users.id
   email     String   @unique
+  phone     String?  // Phone number for SMS authentication
   fullName  String
   studentId String   // The student they're parent/guardian of
   createdAt DateTime @default(now())
