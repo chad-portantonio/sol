@@ -1,78 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
-interface DebugInfo {
-  timestamp: string;
-  url: string;
-  searchParams: Record<string, string>;
-  headers: Record<string, string>;
-  method: string;
-  supabase?: {
-    hasSession: boolean;
-    sessionError?: string;
-    hasUser: boolean;
-    userError?: string;
-    userId?: string;
-    userEmail?: string;
-  };
-  supabaseError?: string;
-}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const token = searchParams.get('token');
+  const type = searchParams.get('type');
   
-  const debugInfo: DebugInfo = {
+  console.log('🔍 DEBUG AUTH ENDPOINT:', {
     timestamp: new Date().toISOString(),
-    url: request.url,
-    searchParams: Object.fromEntries(searchParams.entries()),
-    headers: Object.fromEntries(request.headers.entries()),
-    method: request.method,
-  };
+    token: token ? `present (${token.substring(0, 15)}...)` : 'missing',
+    type,
+    allParams: Object.fromEntries(searchParams.entries()),
+    headers: {
+      userAgent: request.headers.get('user-agent'),
+      referer: request.headers.get('referer'),
+      host: request.headers.get('host'),
+    }
+  });
 
-  console.log('🔧 DEBUG AUTH ENDPOINT:', debugInfo);
-
-  // Test Supabase connection
-  try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                cookieStore.set(name, value, options);
-              });
-            } catch {
-              // Handle cookie setting error silently
-            }
-          },
-        },
-      }
-    );
-
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    debugInfo.supabase = {
-      hasSession: !!session,
-      sessionError: sessionError?.message,
-      hasUser: !!user,
-      userError: userError?.message,
-      userId: user?.id,
-      userEmail: user?.email,
-    };
-
-  } catch (error) {
-    debugInfo.supabaseError = error instanceof Error ? error.message : 'Unknown error';
-  }
-
-  return NextResponse.json(debugInfo, { status: 200 });
+  return NextResponse.json({
+    success: true,
+    message: 'Debug endpoint working',
+    timestamp: new Date().toISOString(),
+    token: token ? `present (${token.substring(0, 15)}...)` : 'missing',
+    type,
+    allParams: Object.fromEntries(searchParams.entries()),
+  });
 }
 
 export async function POST(request: NextRequest) {

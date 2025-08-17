@@ -7,15 +7,17 @@ describe('HomePage', () => {
     
     // Check for main heading (should be unique)
     expect(screen.getByRole('heading', { level: 1, name: 'Nova' })).toBeInTheDocument()
-    expect(screen.getByText('Professional Tutoring Management Platform')).toBeInTheDocument()
+    // Since the content changes based on student/tutor toggle, check for student view (default)
+    expect(screen.getByText('Connect with Caribbean Tutors Today')).toBeInTheDocument()
   })
 
   it('displays feature cards', () => {
     render(<HomePage />)
     
-    expect(screen.getByText('Smart Student Management')).toBeInTheDocument()
-    expect(screen.getByText('Automated Session Tracking')).toBeInTheDocument()
-    expect(screen.getByText('Parent Communication Hub')).toBeInTheDocument()
+    // Default view should show student features
+    expect(screen.getByText('Find Verified Tutors')).toBeInTheDocument()
+    expect(screen.getByText('Work with Multiple Tutors')).toBeInTheDocument()
+    expect(screen.getByText('Track Your Progress')).toBeInTheDocument()
   })
 
   it('shows pricing information', () => {
@@ -28,8 +30,9 @@ describe('HomePage', () => {
   it('has call-to-action buttons', () => {
     render(<HomePage />)
     
-    expect(screen.getByText('Start Your Journey')).toBeInTheDocument()
-    expect(screen.getByText('View Pricing')).toBeInTheDocument()
+    // Student view buttons (default)
+    expect(screen.getByText('Browse Tutors')).toBeInTheDocument()
+    expect(screen.getByText('Create Free Account')).toBeInTheDocument()
   })
 
   it('displays student limit information', () => {

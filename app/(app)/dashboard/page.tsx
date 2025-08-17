@@ -113,7 +113,7 @@ export default async function Dashboard() {
       );
     }
 
-    const activeStudents = tutor.students.filter((student: Student) => student.active);
+    const activeStudents = tutor.students.filter((student) => student.active);
     const totalStudents = tutor.students.length;
 
     return (
@@ -178,7 +178,7 @@ export default async function Dashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {tutor.students.map((student: Student) => (
+                {tutor.students.map((student) => (
                   <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">

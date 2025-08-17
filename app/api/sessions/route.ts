@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 const createSessionSchema = z.object({
   studentId: z.string().min(1, 'Student ID is required'),
+  subject: z.string().min(1, 'Subject is required'),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
   notes: z.string().optional(),
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
     const session = await prisma.session.create({
       data: {
         studentId: validatedData.studentId,
+        subject: validatedData.subject,
         startTime,
         endTime,
         notes: validatedData.notes || null,

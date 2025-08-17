@@ -8,68 +8,193 @@ datasource db {
 }
 
 model Tutor {
-  id               String        @id @default(cuid())
-  userId           String        @unique
-  email            String        @unique
-  stripeCustomerId String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  students         Student[]
-  subscription     Subscription?
+  id                   String                     @id @default(cuid())
+  userId               String                     @unique // Supabase auth.users.id
+  email                String                     @unique
+  stripeCustomerId     String?
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  
+  // Relationships
+  students             Student[]                  // Legacy tutor-created students
+  subscription         Subscription?
+  studentConnections   StudentTutorConnection[]   // New many-to-many connections
+  profile              TutorProfile?              // Public profile for browsing
+  
+  @@index([userId])
+  @@index([email])
 }
 
 model Subscription {
   id               String   @id @default(cuid())
   tutorId          String   @unique
-  status           String
+  status           String   // "active", "canceled", "past_due"
   stripeCustomerId String   @unique
   stripeSubId      String   @unique
   currentPeriodEnd DateTime
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  
   tutor            Tutor    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  
+  @@index([status])
 }
 
+// Unified student model - supports both independent and tutor-created students
 model Student {
-  id              String    @id @default(cuid())
-  tutorId         String?
-  fullName        String
-  subject         String
-  year            String
-  active          Boolean   @default(true)
-  parentEmail     String?
-  parentLinkToken String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  sessions        Session[]
-  parents         Parent[]
-  tutor           Tutor?    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  id                String               @id @default(cuid())
+  userId            String?              @unique // Supabase auth.users.id (null for tutor-created)
+  email             String               @unique
+  fullName          String
+  preferredSubjects String[]             @default([]) // Array of subjects
+  gradeLevel        String?              // "Grade 10", "University Year 1", etc.
+  bio               String?              // Optional student bio
+  active            Boolean              @default(true)
+  
+  // Legacy fields for backward compatibility
+  tutorId           String?              // For tutor-created students only
+  subject           String?              // Primary subject (legacy)
+  year              String?              // Legacy grade field
+  parentEmail       String?              // Legacy parent email
+  parentLinkToken   String?              @unique // For parent access (legacy)
+  
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relationships
+  sessions          Session[]
+  parents           Parent[]
+  tutor             Tutor?               @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  tutorConnections  StudentTutorConnection[] // Many-to-many connections
+  
+  @@index([userId])
+  @@index([tutorId])
+  @@index([email])
+  @@index([gradeLevel])
+}
 
-  @@index([tutorId], map: "idx_student_tutor")
+// Many-to-many junction table for student-tutor relationships
+model StudentTutorConnection {
+  id              String         @id @default(cuid())
+  studentId       String
+  tutorId         String
+  subject         String         // Subject for this specific connection
+  status          String         @default("pending") // "pending", "active", "inactive", "completed"
+  requestMessage  String?        // Message from student when requesting
+  responseMessage String?        // Response from tutor
+  startDate       DateTime?      // When tutoring started
+  endDate         DateTime?      // When tutoring ended
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  student         Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutor           Tutor          @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  sessions        Session[]      // Sessions for this specific connection
+  
+  @@unique([studentId, tutorId, subject])
+  @@index([studentId])
+  @@index([tutorId])
+  @@index([status])
+  @@index([subject])
+}
+
+// Public tutor profile for browsing
+model TutorProfile {
+  id             String   @id @default(cuid())
+  tutorId        String   @unique
+  displayName    String   // Public display name
+  bio            String?  // Public bio
+  subjects       String[] // Subjects they teach
+  experience     String?  // Years of experience, qualifications
+  hourlyRate     String?  // Rate information (can be range)
+  availability   String?  // General availability description
+  profileImage   String?  // URL to profile image
+  rating         Float?   // Average rating (0.0 - 5.0)
+  totalReviews   Int      @default(0) // Count of reviews
+  totalSessions  Int      @default(0) // Total sessions completed
+  verified       Boolean  @default(false) // Manual verification status
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  tutor          Tutor    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  
+  @@index([tutorId])
+  @@index([subjects])
+  @@index([active])
+  @@index([verified])
+  @@index([rating])
 }
 
 model Parent {
   id        String   @id @default(cuid())
-  userId    String   @unique
+  userId    String   @unique // Supabase auth.users.id
   email     String   @unique
   fullName  String
-  studentId String
+  studentId String   // The student they're parent/guardian of
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([studentId])
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  studentId String
-  startTime DateTime
-  endTime   DateTime
-  notes     String?
-  homework  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                  String                 @id @default(cuid())
+  studentId           String
+  tutorId             String?                // Optional - can have sessions without specific tutor
+  connectionId        String?                // Link to specific student-tutor connection
+  title               String?                // Session title/topic
+  subject             String                 // Subject being taught
+  startTime           DateTime
+  endTime             DateTime
+  status              String                 @default("scheduled") // "scheduled", "completed", "cancelled"
+  notes               String?                // Session notes
+  homework            String?                // Homework assigned
+  location            String?                // "online" or physical address
+  meetingLink         String?                // For online sessions
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  
+  student             Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  connection          StudentTutorConnection? @relation(fields: [connectionId], references: [id])
+  
+  @@index([studentId])
+  @@index([tutorId])
+  @@index([connectionId])
+  @@index([startTime])
+  @@index([status])
+  @@index([subject])
+}
 
-  @@index([studentId, startTime], map: "idx_session_student_start")
+// ============================================================================
+// ESSENTIAL ADDITIONS - ONLY WHAT WE ACTUALLY USE
+// ============================================================================
+
+// Simple subject reference table (since we have hardcoded subjects in the UI)
+model Subject {
+  id          String   @id @default(cuid())
+  name        String   @unique // "Mathematics", "English", "Physics", etc.
+  category    String?  // "STEM", "Languages", "Arts", etc.
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  @@index([active])
+  @@index([category])
+}
+
+// Caribbean grade levels (since we collect gradeLevel from students)
+model GradeLevel {
+  id          String   @id @default(cuid())
+  name        String   @unique // "Grade 1", "Form 4", "CSEC Year 1", etc.
+  category    String   // "PRIMARY", "SECONDARY", "SIXTH_FORM", "UNIVERSITY"
+  sequence    Int      @unique // For ordering
+  description String?
+  active      Boolean  @default(true)
+  
+  @@index([category])
+  @@index([sequence])
 }

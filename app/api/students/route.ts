@@ -9,6 +9,7 @@ import { Student } from '@/lib/types';
 
 const createStudentSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
+  email: z.string().email('Valid email is required'),
   subject: z.string().min(1, 'Subject is required'),
   year: z.string().min(1, 'Year is required'),
   parentEmail: z.string().email().optional(),

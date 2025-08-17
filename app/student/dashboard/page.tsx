@@ -1,289 +1,382 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-import { Student, Session } from '@/lib/types';
-import type { User } from '@supabase/supabase-js';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { createBrowserClient } from "@supabase/ssr";
+
+interface StudentTutorConnection {
+  id: string;
+  subject: string;
+  status: string;
+  requestMessage?: string;
+  responseMessage?: string;
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+  tutor: {
+    id: string;
+    email: string;
+    profile?: {
+      displayName: string;
+      bio?: string;
+      subjects: string[];
+      experience?: string;
+      hourlyRate?: string;
+      rating?: number;
+      verified: boolean;
+    };
+  };
+}
+
+interface Student {
+  id: string;
+  fullName: string;
+  email: string;
+  preferredSubjects: string[];
+  gradeLevel?: string;
+  bio?: string;
+  tutorConnections: StudentTutorConnection[];
+  // Legacy fields for backward compatibility
+  subject?: string;
+  year?: string;
+  tutorId?: string;
+  tutor?: {
+    id: string;
+    email: string;
+    profile?: {
+      displayName: string;
+    };
+  };
+}
 
 export default function StudentDashboard() {
-  const [user, setUser] = useState<User | null>(null);
   const [student, setStudent] = useState<Student | null>(null);
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [connections, setConnections] = useState<StudentTutorConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'completed' | 'all'>('active');
   
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const router = useRouter();
 
-  const fetchSessions = useCallback(async (studentId: string) => {
-    try {
-      const response = await fetch(`/api/students/${studentId}/sessions`);
-      if (response.ok) {
-        const sessionsData = await response.json();
-        setSessions(sessionsData);
-      }
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
-    }
+  useEffect(() => {
+    fetchStudentData();
+    fetchConnections();
   }, []);
 
-  const fetchStudentData = useCallback(async (userId: string) => {
+  const fetchStudentData = async () => {
     try {
-      // Fetch user record
-      const userResponse = await fetch(`/api/students/user/${userId}`);
-      if (!userResponse.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const userData = await userResponse.json();
-      
-      if (userData.role === 'student') {
-        if (userData.studentId) {
-          // Fetch student details if we have a student ID
-          const studentResponse = await fetch(`/api/students/${userData.studentId}/public`);
-          if (studentResponse.ok) {
-            const studentData = await studentResponse.json();
-            setStudent(studentData);
-            
-            // Fetch sessions for this student
-            await fetchSessions(userData.studentId);
-          }
-        } else {
-          // Student user without a linked student record
-          setError('Your student account needs to be set up by your tutor. Please contact them to link your account.');
-        }
-      } else if (userData.role === 'parent') {
-        // Try to fetch parent data, but expect this to fail with current schema
-        const parentResponse = await fetch(`/api/students/parent/${userId}`);
-        if (parentResponse.ok) {
-          const parentData = await parentResponse.json();
-          setStudent(parentData.student);
-          
-          // Fetch sessions for the student
-          await fetchSessions(parentData.student.id);
-        } else {
-          // Parent access not implemented with current schema
-          setError('Parent access is not yet implemented. Please use the parent link provided by your tutor.');
-        }
+      const response = await fetch('/api/student-accounts');
+      const data = await response.json();
+
+      if (response.ok) {
+        setStudent(data.student);
       } else {
-        setError('Unable to determine account type. Please contact support.');
+        if (response.status === 401) {
+          // User not authenticated, redirect to sign-in
+          window.location.href = '/student-sign-in';
+          return;
+        }
+        setError(data.error || 'Failed to fetch student data');
       }
-    } catch (error) {
-      console.error('Error fetching student data:', error);
-      setError('Failed to load student data');
+    } catch (err) {
+      console.error('Error fetching student data:', err);
+      setError('Failed to fetch student data');
     }
-  }, [fetchSessions]);
+  };
 
-  const checkUser = useCallback(async () => {
+  const fetchConnections = async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error || !user) {
-        router.push('/student/sign-in');
-        return;
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (activeTab !== 'all') {
+        params.append('status', activeTab);
       }
 
-      // Check if user is a tutor
-      const userRole = user.user_metadata?.role;
-      if (userRole === 'tutor') {
-        router.push('/app/dashboard');
-        return;
-      }
+      const response = await fetch(`/api/student-tutor-connections?${params}`);
+      const data = await response.json();
 
-      setUser(user);
-      
-      // Fetch student data
-      await fetchStudentData(user.id);
-    } catch (error) {
-      console.error('Error checking user:', error);
-      setError('Failed to load user data');
+      if (response.ok) {
+        setConnections(data.connections);
+      } else {
+        setError(data.error || 'Failed to fetch connections');
+      }
+    } catch (err) {
+      console.error('Error fetching connections:', err);
+      setError('Failed to fetch connections');
     } finally {
       setLoading(false);
     }
-  }, [supabase.auth, router, fetchStudentData]);
+  };
 
   useEffect(() => {
-    checkUser();
-  }, [checkUser]);
+    fetchConnections();
+  }, [activeTab]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
   };
 
-  const formatDate = (dateInput: Date | string) => {
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (dateInput: Date | string) => {
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
-  if (loading) {
+  if (loading && !student) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !student) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-6 py-4 rounded-lg max-w-md mx-auto">
+          {error}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Nova</h1>
-              <span className="ml-4 text-sm text-gray-500">
-                Student Dashboard
-              </span>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950 transition-colors duration-300">
+      {/* Navigation */}
+      <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+              Nova
+            </Link>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                Welcome, {user?.user_metadata?.full_name || 'Student'}
-              </span>
+              <ThemeToggle />
+              <Link 
+                href="/browse-tutors"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
+              >
+                Browse Tutors
+              </Link>
               <button
                 onClick={handleSignOut}
-                className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
               >
                 Sign Out
               </button>
             </div>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {student ? (
-          <div className="space-y-8">
-            {/* Student Info */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Student Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-500">Name</label>
-                  <p className="mt-1 text-sm text-gray-900">{student.fullName}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500">Subject</label>
-                  <p className="mt-1 text-sm text-gray-900">{student.subject}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500">Year</label>
-                  <p className="mt-1 text-sm text-gray-900">{student.year}</p>
-                </div>
+      <div className="container mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4">
+            Welcome back, {student?.fullName || 'Student'}!
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400">
+            Manage your tutoring connections and track your learning progress.
+          </p>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {connections.filter(c => c.status === 'active').length}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">Active Tutors</p>
               </div>
             </div>
-
-            {/* Sessions */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
+          </div>
+          
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              <div className="p-6">
-                {sessions.length > 0 ? (
-                  <div className="space-y-4">
-                    {sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              {formatDate(session.startTime)}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                            </p>
-                          </div>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Completed
-                          </span>
-                        </div>
-                        
-                        {session.notes && (
-                          <div className="mt-3">
-                            <h4 className="text-sm font-medium text-gray-700">Notes:</h4>
-                            <p className="text-sm text-gray-600 mt-1">{session.notes}</p>
-                          </div>
-                        )}
-                        
-                        {session.homework && (
-                          <div className="mt-3">
-                            <h4 className="text-sm font-medium text-gray-700">Homework:</h4>
-                            <p className="text-sm text-gray-600 mt-1">{session.homework}</p>
-                          </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {connections.filter(c => c.status === 'pending').length}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">Pending Requests</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {student?.preferredSubjects.length || 0}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">Subjects of Interest</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50 mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
+          <div className="flex flex-wrap gap-4">
+            <Link
+              href="/browse-tutors"
+              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              Find New Tutors
+            </Link>
+            <Link
+              href="/student/profile"
+              className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
+            >
+              Edit Profile
+            </Link>
+          </div>
+        </div>
+
+        {/* Tutor Connections */}
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Tutors</h2>
+            
+            {/* Tab Navigation */}
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              {[
+                { key: 'active', label: 'Active' },
+                { key: 'pending', label: 'Pending' },
+                { key: 'all', label: 'All' }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as 'pending' | 'active' | 'completed' | 'all')}
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                    activeTab === tab.key
+                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : connections.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No tutors found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {activeTab === 'active' 
+                  ? "You don't have any active tutoring relationships yet."
+                  : activeTab === 'pending'
+                  ? "You don't have any pending requests."
+                  : "You haven't connected with any tutors yet."
+                }
+              </p>
+              <Link
+                href="/browse-tutors"
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300"
+              >
+                Browse Tutors
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {connections.map((connection) => (
+                <div key={connection.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold">
+                          {connection.tutor.profile?.displayName?.charAt(0) || connection.tutor.email.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {connection.tutor.profile?.displayName || connection.tutor.email}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {connection.subject}
+                        </p>
+                        {connection.tutor.profile?.hourlyRate && (
+                          <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                            {connection.tutor.profile.hourlyRate}
+                          </p>
                         )}
                       </div>
-                    ))}
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(connection.status)}`}>
+                        {connection.status.charAt(0).toUpperCase() + connection.status.slice(1)}
+                      </span>
+                      {connection.tutor.profile?.verified && (
+                        <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No sessions found.</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Sessions will appear here once your tutor schedules them.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  
+                  {connection.requestMessage && (
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <strong>Your message:</strong> {connection.requestMessage}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {connection.responseMessage && (
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Tutor response:</strong> {connection.responseMessage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Welcome to Nova!
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Your account is being set up. You&apos;ll be able to view your sessions and progress here once everything is configured.
-            </p>
-            <div className="space-y-2">
-              <p className="text-sm text-gray-500">
-                If you&apos;re a student, your tutor will need to link your account.
-              </p>
-              <p className="text-sm text-gray-500">
-                If you&apos;re a parent, you&apos;ll need a student ID from your tutor.
-              </p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

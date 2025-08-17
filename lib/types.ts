@@ -1,12 +1,20 @@
 export interface Student {
   id: string;
-  tutorId?: string | null;
+  userId?: string | null;
+  email: string;
   fullName: string;
-  subject: string;
-  year: string;
+  preferredSubjects: string[];
+  gradeLevel?: string | null;
+  bio?: string | null;
   active: boolean;
-  parentEmail: string | null;
+  
+  // Legacy fields for backward compatibility
+  tutorId?: string | null;
+  subject?: string | null;
+  year?: string | null;
+  parentEmail?: string | null;
   parentLinkToken?: string | null;
+  
   createdAt: Date;
   updatedAt: Date;
   sessions?: Session[];
@@ -15,10 +23,17 @@ export interface Student {
 export interface Session {
   id: string;
   studentId: string;
+  tutorId?: string | null;
+  connectionId?: string | null;
+  title?: string | null;
+  subject: string;
   startTime: Date;
   endTime: Date;
-  notes: string | null;
-  homework: string | null;
+  status: string;
+  notes?: string | null;
+  homework?: string | null;
+  location?: string | null;
+  meetingLink?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

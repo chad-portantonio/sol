@@ -11,8 +11,12 @@ jest.mock('@supabase/ssr', () => ({
   createServerClient: jest.fn(),
 }));
 
-// Mock NextResponse with a simpler structure
-const mockRedirect = jest.fn();
+// Mock NextResponse.redirect first
+const mockRedirect = jest.fn().mockImplementation((url: string) => ({
+  status: 302,
+  headers: new Map([['location', url]]),
+}));
+
 jest.mock('next/server', () => ({
   NextRequest: class MockNextRequest {
     constructor(public url: string) {}
@@ -21,7 +25,10 @@ jest.mock('next/server', () => ({
     }
   },
   NextResponse: {
-    redirect: mockRedirect,
+    redirect: jest.fn().mockImplementation((url: string) => ({
+      status: 302,
+      headers: new Map([['location', url]]),
+    })),
   },
 }));
 

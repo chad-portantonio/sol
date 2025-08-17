@@ -8,8 +8,8 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Nova - Professional Tutoring Management",
-  description: "Streamline your tutoring business with student management, session tracking, and parent communication",
+  title: "Nova - Caribbean Tutoring Platform",
+  description: "Connect with qualified tutors across Jamaica and the Caribbean. Comprehensive tutoring platform for students, parents, and educators in the region.",
 };
 
 export default function RootLayout({

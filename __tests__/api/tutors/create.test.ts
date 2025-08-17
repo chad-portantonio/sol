@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     tutor: {
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
   },
@@ -29,6 +30,7 @@ describe('/api/tutors/create', () => {
         updatedAt: new Date(),
       };
 
+      (mockPrisma.tutor.findUnique as jest.Mock).mockResolvedValue(null); // No existing tutor
       (mockPrisma.tutor.create as jest.Mock).mockResolvedValue(mockTutor);
 
       const mockRequest = {
@@ -62,6 +64,7 @@ describe('/api/tutors/create', () => {
         updatedAt: new Date(),
       };
 
+      (mockPrisma.tutor.findUnique as jest.Mock).mockResolvedValue(null); // No existing tutor
       (mockPrisma.tutor.create as jest.Mock).mockResolvedValue(mockTutor);
 
       const mockRequest = {
@@ -145,6 +148,7 @@ describe('/api/tutors/create', () => {
   describe('Database Constraint Handling', () => {
     it('should return 409 for duplicate userId constraint violation', async () => {
       const duplicateError = new Error('Unique constraint failed on the fields: (`userId`)');
+      (mockPrisma.tutor.findUnique as jest.Mock).mockResolvedValue(null);
       (mockPrisma.tutor.create as jest.Mock).mockRejectedValue(duplicateError);
 
       const mockRequest = {

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function AnimatedCubes() {
+export default function AnimatedStarfield() {
   return (
     <div className="relative w-[600px] h-[500px] overflow-hidden">
       {/* Subtle cosmic background */}

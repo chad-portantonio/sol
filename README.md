@@ -1,6 +1,6 @@
-# Brianna's Playground
+# Nova Tutoring Platform
 
-A clean slate for building something amazing. This Next.js project has been stripped down to the essentials, ready for your next big idea.
+A comprehensive tutoring management platform connecting students across Jamaica and the Caribbean with qualified regional tutors. Built to streamline the tutoring experience for Caribbean students, parents, and educators.
 
 ## Getting Started
 

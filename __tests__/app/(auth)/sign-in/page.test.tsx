@@ -24,7 +24,7 @@ describe('SignInPage', () => {
     it('renders sign in form with all required elements', () => {
       render(<SignInPage />)
       
-      expect(screen.getByText('Sign in to your account')).toBeInTheDocument()
+      expect(screen.getByText('Login to your Nova account')).toBeInTheDocument()
       expect(screen.getByLabelText('Email address')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Send magic link' })).toBeInTheDocument()
     })
@@ -32,13 +32,13 @@ describe('SignInPage', () => {
     it('displays Nova branding', () => {
       render(<SignInPage />)
       
-      expect(screen.getByText('Nova')).toBeInTheDocument()
+      expect(screen.getByText('Login to your Nova account')).toBeInTheDocument()
     })
 
     it('has link to sign up page', () => {
       render(<SignInPage />)
       
-      const signUpLink = screen.getByText('create a new account')
+      const signUpLink = screen.getByText('Sign up')
       expect(signUpLink).toBeInTheDocument()
       expect(signUpLink.closest('a')).toHaveAttribute('href', '/sign-up')
     })
@@ -296,8 +296,8 @@ describe('SignInPage', () => {
     it('has proper heading structure', () => {
       render(<SignInPage />)
       
-      expect(screen.getByRole('heading', { name: 'Nova' })).toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: 'Sign in to your account' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Login to your Nova account' })).toBeInTheDocument()
     })
   })
 })

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AnimatedCubes } from "@/components/animated-cubes";
+import AnimatedCubes from "@/components/animated-cubes";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -42,9 +42,7 @@ export default function SignIn() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: process.env.NODE_ENV === 'production' 
-            ? 'https://portantonio.co/auth/callback'
-            : `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -76,7 +74,7 @@ export default function SignIn() {
               Welcome back
             </h1>
             <h2 className="mt-6 text-xl font-medium text-gray-900 dark:text-white">
-              Login to your Sol account
+              Login to your Nova account
             </h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{" "}

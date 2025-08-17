@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AnimatedCubes } from "@/components/animated-cubes";
+import AnimatedCubes from "@/components/animated-cubes";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -66,7 +66,7 @@ export default function SignUp() {
               Get started
             </h1>
             <h2 className="mt-6 text-xl font-medium text-gray-900 dark:text-white">
-              Create your Sol account
+              Create your Nova account
             </h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Already have an account?{" "}
