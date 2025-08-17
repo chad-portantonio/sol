@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get tutors with their profiles (with retry logic)
-    let tutorProfiles = [];
+    let tutorProfiles: any[] = [];
     let totalCount = 0;
     
     for (let retryCount = 0; retryCount < 3; retryCount++) {
