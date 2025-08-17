@@ -8,6 +8,14 @@ import { SessionForm } from "./session-form";
 import { CopyLink } from "./copy-link";
 import { Session } from "@/lib/types";
 
+// Helper function to get the correct base URL
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  return 'https://portantonio.co'; // Production fallback
+}
+
 export default async function StudentPage({
   params,
 }: {
@@ -106,11 +114,11 @@ export default async function StudentPage({
             <input
               type="text"
               readOnly
-              value={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent/${student.parentLinkToken}`}
+              value={`${getBaseUrl()}/parent/${student.parentLinkToken}`}
               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-white"
             />
             <CopyLink 
-              link={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent/${student.parentLinkToken}`}
+              link={`${getBaseUrl()}/parent/${student.parentLinkToken}`}
               label="Copy"
             />
           </div>
