@@ -72,21 +72,32 @@ export default function TutorProfilePage() {
         const response = await fetch('/api/tutors/profiles');
         if (response.ok) {
           const data = await response.json();
-                     const userProfile = data.tutors.find((t: { tutor: { userId: string } }) => t.tutor.userId === user.id);
-          if (userProfile) {
-            setProfile({
-              displayName: userProfile.displayName || '',
-              bio: userProfile.bio || '',
-              subjects: userProfile.subjects || [],
-              experience: userProfile.experience || '',
-              hourlyRate: userProfile.hourlyRate || '',
-              availability: userProfile.availability || '',
-              profileImage: userProfile.profileImage || '',
-              country: userProfile.country || '',
-              city: userProfile.city || '',
-              address: userProfile.address || ''
-            });
+          console.log('Profile data loaded:', data); // Debug log
+          
+          if (data.tutors && Array.isArray(data.tutors)) {
+            const userProfile = data.tutors.find((t: { tutor?: { userId: string } }) => t.tutor?.userId === user.id);
+            if (userProfile) {
+              console.log('Found user profile:', userProfile); // Debug log
+              setProfile({
+                displayName: userProfile.displayName || '',
+                bio: userProfile.bio || '',
+                subjects: userProfile.subjects || [],
+                experience: userProfile.experience || '',
+                hourlyRate: userProfile.hourlyRate || '',
+                availability: userProfile.availability || '',
+                profileImage: userProfile.profileImage || '',
+                country: userProfile.country || '',
+                city: userProfile.city || '',
+                address: userProfile.address || ''
+              });
+            } else {
+              console.log('No profile found for user:', user.id); // Debug log
+            }
+          } else {
+            console.log('Invalid data structure:', data); // Debug log
           }
+        } else {
+          console.error('Failed to fetch profile:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Error loading profile:', error);
@@ -253,7 +264,7 @@ export default function TutorProfilePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Profile Image */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Profile Image</h3>
@@ -317,7 +328,7 @@ export default function TutorProfilePage() {
             {/* Basic Information */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Display Name *
@@ -440,7 +451,7 @@ export default function TutorProfilePage() {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Select all subjects you&apos;re qualified to teach
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     {ALL_SUBJECTS.map(subject => (
                       <button
                         key={subject}
@@ -487,11 +498,11 @@ export default function TutorProfilePage() {
                   </label>
                   <div className="space-y-4">
                     {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                      <div key={day} className="flex items-center space-x-4 p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                        <div className="w-24 font-medium text-gray-700 dark:text-gray-300">
+                      <div key={day} className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
+                        <div className="w-full sm:w-24 font-medium text-gray-700 dark:text-gray-300">
                           {day}
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 w-full sm:w-auto">
                           <select 
                             className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                             onChange={(e) => {

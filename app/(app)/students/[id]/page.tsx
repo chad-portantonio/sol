@@ -41,16 +41,16 @@ export default async function StudentPage({
   }
 
   const upcomingSessions = student.sessions.filter(
-    (session: Session) => session.startTime > new Date()
+    (session: { startTime: Date }) => session.startTime > new Date()
   );
   const pastSessions = student.sessions.filter(
-    (session: Session) => session.startTime <= new Date()
+    (session: { startTime: Date }) => session.startTime <= new Date()
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
         <div>
           <Link
             href="/dashboard"
@@ -58,20 +58,22 @@ export default async function StudentPage({
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white dark:text-white mt-2">
             {student.fullName}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 dark:text-gray-400 mt-1">
             {student.subject} • {student.year}
           </p>
         </div>
-        <StudentActions student={student} />
+        <div className="sm:self-start">
+          <StudentActions student={student} />
+        </div>
       </div>
 
       {/* Student Info */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-colors">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-colors">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-4">Student Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-400">Full Name</label>
             <p className="text-gray-900 dark:text-white dark:text-white">{student.fullName}</p>
@@ -126,7 +128,7 @@ export default async function StudentPage({
       </div>
 
       {/* Add Session Form */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-colors">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-colors">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-4">Add New Session</h2>
         <SessionForm studentId={student.id} />
       </div>
@@ -134,12 +136,12 @@ export default async function StudentPage({
       {/* Upcoming Sessions */}
       {upcomingSessions.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white">Upcoming Sessions</h2>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700 dark:divide-gray-700">
-            {upcomingSessions.map((session: Session) => (
-              <div key={session.id} className="px-6 py-4">
+            {upcomingSessions.map((session: { id: string; startTime: Date; endTime: Date; notes: string | null; homework: string | null }) => (
+              <div key={session.id} className="px-4 sm:px-6 py-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
@@ -179,12 +181,12 @@ export default async function StudentPage({
       {/* Past Sessions */}
       {pastSessions.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {pastSessions.slice(0, 6).map((session: Session) => (
-              <div key={session.id} className="px-6 py-4">
+            {pastSessions.slice(0, 6).map((session: { id: string; startTime: Date; endTime: Date; notes: string | null; homework: string | null }) => (
+              <div key={session.id} className="px-4 sm:px-6 py-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">

@@ -231,7 +231,7 @@ export default function TutorOnboarding() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Profile Image */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Profile Image</h3>

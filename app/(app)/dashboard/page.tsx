@@ -120,40 +120,40 @@ export default async function Dashboard() {
     const totalStudents = tutor.students.length;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your students and sessions</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage your students and sessions</p>
           </div>
           <Link
             href="/students/new"
-            className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-300"
+            className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-300 w-full sm:w-auto text-center"
           >
             Add New Student
           </Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{activeStudents.length}</div>
-            <div className="text-gray-600 dark:text-gray-400">Active Students</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{activeStudents.length}</div>
+            <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Active Students</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{totalStudents}</div>
-            <div className="text-gray-600 dark:text-gray-400">Total Students</div>
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{totalStudents}</div>
+            <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Total Students</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{20 - activeStudents.length}</div>
-            <div className="text-gray-600 dark:text-gray-400">Slots Available</div>
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300 sm:col-span-2 md:col-span-1">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{20 - activeStudents.length}</div>
+            <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Slots Available</div>
           </div>
         </div>
 
         {/* Students Table */}
         <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Students</h2>
           </div>
           <div className="overflow-x-auto">

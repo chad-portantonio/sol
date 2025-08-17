@@ -222,22 +222,22 @@ export default function NewStudent() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
+    <div className="max-w-2xl mx-auto px-4 sm:px-0">
+      <div className="mb-4 sm:mb-6">
         <Link
           href="/dashboard"
           className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors"
         >
           ← Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-4">Add New Student</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-3 sm:mt-4">Add New Student</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
           Add a new student to your tutoring roster. You can have up to 20 active students.
         </p>
       </div>
 
-      <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md transition-colors">
               {error}
