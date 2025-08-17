@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { ThemeToggle } from '@/components/theme-toggle';
 import type { User } from '@supabase/supabase-js';
+import { Subject, SUBJECT_DISPLAY_NAMES, ALL_SUBJECTS, subjectToDisplayName, displayNameToSubject } from '@/lib/subjects';
 
 const CARIBBEAN_COUNTRIES = [
   "Antigua and Barbuda", "Bahamas", "Barbados", "Cuba", "Dominica",
@@ -13,11 +14,7 @@ const CARIBBEAN_COUNTRIES = [
   "Saint Lucia", "Saint Vincent and the Grenadines", "Trinidad and Tobago"
 ];
 
-const SUBJECTS = [
-  'Mathematics', 'English', 'Science', 'Physics', 'Chemistry', 'Biology',
-  'History', 'Geography', 'Computer Science', 'Programming', 'Languages',
-  'Spanish', 'French', 'Art', 'Music', 'Economics', 'Psychology'
-];
+const SUBJECTS = ALL_SUBJECTS;
 
 interface TutorProfile {
   displayName: string;
@@ -366,7 +363,7 @@ export default function TutorOnboarding() {
                         : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {subject}
+                    {subjectToDisplayName(subject)}
                   </button>
                 ))}
               </div>

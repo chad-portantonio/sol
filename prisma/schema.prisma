@@ -7,6 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Subject enum will be added in future migration
+// enum Subject {
+//   MATHEMATICS
+//   ENGLISH
+//   SCIENCE
+//   PHYSICS
+//   CHEMISTRY
+//   BIOLOGY
+//   HISTORY
+//   GEOGRAPHY
+//   COMPUTER_SCIENCE
+//   PROGRAMMING
+//   LANGUAGES
+//   SPANISH
+//   FRENCH
+//   ART
+//   MUSIC
+//   ECONOMICS
+//   PSYCHOLOGY
+// }
+
 model Tutor {
   id                   String                     @id @default(cuid())
   userId               String                     @unique // Supabase auth.users.id
@@ -181,18 +202,7 @@ model Session {
 // ESSENTIAL ADDITIONS - ONLY WHAT WE ACTUALLY USE
 // ============================================================================
 
-// Simple subject reference table (since we have hardcoded subjects in the UI)
-model Subject {
-  id          String   @id @default(cuid())
-  name        String   @unique // "Mathematics", "English", "Physics", etc.
-  category    String?  // "STEM", "Languages", "Arts", etc.
-  description String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  
-  @@index([active])
-  @@index([category])
-}
+// Subject enum is now defined at the top of the file
 
 // Caribbean grade levels (since we collect gradeLevel from students)
 model GradeLevel {
