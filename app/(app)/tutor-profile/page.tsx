@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -30,11 +30,14 @@ interface TutorProfile {
 
 export default function TutorProfilePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [profile, setProfile] = useState<TutorProfile>({
     displayName: '',
     bio: '',
@@ -104,6 +107,60 @@ export default function TutorProfilePage() {
     }));
   };
 
+  const generateAvatarUrl = (name: string) => {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    setImageFile(file);
+    setError(null);
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImagePreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (): Promise<string> => {
+    if (!imageFile) {
+      throw new Error('No image file selected');
+    }
+
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('tutor-images')
+      .upload(fileName, imageFile);
+
+    if (uploadError) {
+      throw new Error(`Failed to upload image: ${uploadError.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('tutor-images')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -117,6 +174,13 @@ export default function TutorProfilePage() {
     }
 
     try {
+      let imageUrl = profile.profileImage;
+      
+      if (imageFile) {
+        // Upload new image if provided
+        imageUrl = await uploadImage();
+      }
+
       const response = await fetch('/api/tutors/profiles', {
         method: 'POST',
         headers: {
@@ -124,7 +188,8 @@ export default function TutorProfilePage() {
         },
         body: JSON.stringify({
           tutorId: user.id,
-          ...profile
+          ...profile,
+          profileImage: imageUrl
         }),
       });
 
@@ -181,6 +246,66 @@ export default function TutorProfilePage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Profile Image */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Profile Image</h3>
+              <div className="flex items-center space-x-6">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center overflow-hidden">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : profile.profileImage ? (
+                    <img 
+                      src={profile.profileImage} 
+                      alt="Current Profile" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : (
+                    <img 
+                      src={generateAvatarUrl(profile.displayName)} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials if avatar fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  )}
+                  {!imagePreview && !profile.profileImage && (
+                    <span className="text-2xl font-bold text-white hidden">
+                      {profile.displayName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {profile.profileImage ? 'Change Image' : 'Upload Image'}
+                  </button>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Upload a clear photo of yourself (max 5MB) or use the generated avatar
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Basic Information */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
