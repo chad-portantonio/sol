@@ -94,13 +94,13 @@ export default function SignUp() {
       </div>
       
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="max-w-md w-full space-y-6 sm:space-y-8 p-4 sm:p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
               Get started
             </h1>
-            <h2 className="mt-6 text-xl font-medium text-gray-900 dark:text-white">
+            <h2 className="mt-4 sm:mt-6 text-lg sm:text-xl font-medium text-gray-900 dark:text-white">
               Create your Nova account
             </h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -115,7 +115,7 @@ export default function SignUp() {
           </div>
 
         {stage === 'form' ? (
-          <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
+          <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSignUp}>
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md transition-colors duration-300">
                 {error}
@@ -161,32 +161,37 @@ export default function SignUp() {
             </div>
           </form>
         ) : (
-          <div className="mt-8 space-y-6">
+          <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md transition-colors duration-300">
                 {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md transition-colors duration-300">
-                {success}
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md transition-all duration-300 animate-in slide-in-from-top-2">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{success}</span>
+                </div>
               </div>
             )}
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white/70 dark:bg-gray-800/70">
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 We sent a magic link to <span className="font-semibold">{sentTo}</span>
               </p>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="mt-4 space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
                 <button
                   onClick={handleResend}
                   disabled={loading}
-                  className="w-full py-2 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {loading ? 'Resending…' : 'Resend email'}
                 </button>
                 <button
                   onClick={handleChangeEmail}
-                  className="w-full py-2 px-4 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="w-full py-2.5 px-4 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
                   Use a different email
                 </button>
