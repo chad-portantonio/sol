@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 // Get all tutor profiles for browsing
 export async function GET(request: NextRequest) {
@@ -22,7 +23,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get tutors with their profiles (with retry logic)
-    let tutorProfiles: any[] = [];
+    let tutorProfiles: Prisma.TutorProfileGetPayload<{
+      include: { tutor: { select: { id: true; email: true; createdAt: true } } }
+    }>[] = [];
     let totalCount = 0;
     
     for (let retryCount = 0; retryCount < 3; retryCount++) {
