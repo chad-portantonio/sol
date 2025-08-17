@@ -105,7 +105,7 @@ export default function Navigation({ variant, activeView, onToggleView, classNam
 
   const navClasses =
     variant === 'app'
-      ? 'bg-white shadow-sm border-b border-gray-200'
+      ? 'bg-gray-800/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-700 dark:border-gray-600'
       : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-300';
 
   return (

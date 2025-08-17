@@ -10,6 +10,7 @@ export default function NewStudent() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: "",
+    email: "",
     subject: "",
     year: "",
     parentEmail: "",
@@ -43,7 +44,7 @@ export default function NewStudent() {
 
       setNewStudent(data.student);
       setSuccess(true);
-      setFormData({ fullName: "", subject: "", year: "", parentEmail: "" });
+      setFormData({ fullName: "", email: "", subject: "", year: "", parentEmail: "" });
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -256,6 +257,23 @@ export default function NewStudent() {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Enter student's full name"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Student Email *
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              disabled={loading}
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="Enter student's email address"
             />
           </div>
 
