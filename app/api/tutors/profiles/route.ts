@@ -93,12 +93,15 @@ export async function POST(request: NextRequest) {
       experience, 
       hourlyRate, 
       availability,
-      profileImage 
+      profileImage,
+      country,
+      city,
+      address
     } = await request.json();
 
-    if (!tutorId || !displayName || !subjects || !Array.isArray(subjects) || subjects.length === 0) {
+    if (!tutorId || !displayName || !subjects || !Array.isArray(subjects) || subjects.length === 0 || !profileImage || !country || !city) {
       return NextResponse.json(
-        { error: 'Missing required fields: tutorId, displayName, and subjects are required' },
+        { error: 'Missing required fields: tutorId, displayName, subjects, profileImage, country, and city are required' },
         { status: 400 }
       );
     }
@@ -125,7 +128,10 @@ export async function POST(request: NextRequest) {
         experience: experience || null,
         hourlyRate: hourlyRate || null,
         availability: availability || null,
-        profileImage: profileImage || null,
+        profileImage,
+        country,
+        city,
+        address: address || null,
       },
       create: {
         tutorId,
@@ -135,7 +141,10 @@ export async function POST(request: NextRequest) {
         experience: experience || null,
         hourlyRate: hourlyRate || null,
         availability: availability || null,
-        profileImage: profileImage || null,
+        profileImage,
+        country,
+        city,
+        address: address || null,
       },
       include: {
         tutor: {

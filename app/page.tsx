@@ -136,7 +136,7 @@ export default function Home() {
             ) : (
               <>
                 <Link 
-                  href="/sign-up"
+                  href="/tutor-sign-up"
                   className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 dark:hover:from-blue-600 dark:hover:to-purple-600 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 dark:hover:shadow-blue-400/25 transform hover:-translate-y-1 hover:scale-105"
                 >
                   <span className="flex items-center">

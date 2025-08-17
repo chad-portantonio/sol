@@ -19,6 +19,9 @@ interface TutorProfile {
   rating?: number;
   totalSessions: number;
   verified: boolean;
+  country: string;
+  city: string;
+  address?: string;
   tutor: {
     id: string;
     email: string;
@@ -65,6 +68,13 @@ export default function BrowseTutors() {
     'History', 'Geography', 'Computer Science', 'Programming', 'Languages',
     'Spanish', 'French', 'Art', 'Music', 'Economics', 'Psychology'
   ];
+
+  // Generate cartoon avatar URL based on display name
+  const generateAvatarUrl = (name: string) => {
+    if (!name) return '';
+    const seed = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+  };
 
   const fetchTutors = async (page = 1, subject = '', retryCount = 0) => {
     try {
@@ -224,13 +234,19 @@ export default function BrowseTutors() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-end">
+              <div className="flex items-end gap-3">
                 <button
                   onClick={() => fetchTutors(1, searchSubject)}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Search
                 </button>
+                <Link
+                  href="/tutor-sign-up"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Become a Tutor
+                </Link>
               </div>
             </div>
           </div>
@@ -268,12 +284,34 @@ export default function BrowseTutors() {
                   <div className="text-center mb-3 sm:mb-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       {tutor.profileImage ? (
-                        <img src={tutor.profileImage} alt={tutor.displayName} className="w-full h-full rounded-full object-cover" />
+                        <img 
+                          src={tutor.profileImage} 
+                          alt={tutor.displayName} 
+                          className="w-full h-full rounded-full object-cover"
+                          onError={(e) => {
+                            // Fallback to cartoon avatar if profile image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
                       ) : (
-                        <span className="text-xl sm:text-2xl font-bold text-white">
-                          {tutor.displayName.charAt(0).toUpperCase()}
-                        </span>
+                        <img 
+                          src={generateAvatarUrl(tutor.displayName)} 
+                          alt={tutor.displayName} 
+                          className="w-full h-full rounded-full object-cover"
+                          onError={(e) => {
+                            // Fallback to initials if avatar fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
                       )}
+                      {/* Fallback initials - hidden by default */}
+                      <span className="text-xl sm:text-2xl font-bold text-white hidden">
+                        {tutor.displayName.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                     <div className="flex items-center justify-center mb-2">
                       <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mr-2">
@@ -314,6 +352,16 @@ export default function BrowseTutors() {
                           +{tutor.subjects.length - 3} more
                         </span>
                       )}
+                    </div>
+                    
+                    {/* Location */}
+                    <div className="text-center mb-3 sm:mb-4">
+                      <div className="flex items-center justify-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        {tutor.city}, {tutor.country}
+                      </div>
                     </div>
                     
                     {tutor.bio && (

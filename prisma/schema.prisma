@@ -45,7 +45,7 @@ model Subscription {
 model Student {
   id                String               @id @default(cuid())
   userId            String?              @unique // Supabase auth.users.id (null for tutor-created)
-  email             String               @unique
+  email             String?              @unique // Made optional to handle existing NULL values
   phone             String?              // Phone number for SMS authentication
   fullName          String
   preferredSubjects String[]             @default([]) // Array of subjects
@@ -110,7 +110,10 @@ model TutorProfile {
   experience     String?  // Years of experience, qualifications
   hourlyRate     String?  // Rate information (can be range)
   availability   String?  // General availability description
-  profileImage   String?  // URL to profile image
+  profileImage   String   // URL to profile image (required)
+  country        String   // Country (e.g., "Jamaica", "Trinidad and Tobago")
+  city           String   // City (e.g., "Kingston", "Port of Spain")
+  address        String?  // Optional detailed address
   rating         Float?   // Average rating (0.0 - 5.0)
   totalReviews   Int      @default(0) // Count of reviews
   totalSessions  Int      @default(0) // Total sessions completed
@@ -126,6 +129,8 @@ model TutorProfile {
   @@index([active])
   @@index([verified])
   @@index([rating])
+  @@index([country])
+  @@index([city])
 }
 
 model Parent {

@@ -114,8 +114,25 @@ export async function GET(request: NextRequest) {
           } catch (fetchError) {
             console.warn(`Network error creating ${role} account:`, fetchError, '- proceeding with login');
           }
+          
+          // Students always go to dashboard
+          return redirectResponse(`${origin}/dashboard`);
         } else {
-          // Try to create tutor record
+          // This is a tutor - check if they have a complete profile
+          let hasCompleteProfile = false;
+          
+          try {
+            // Check if tutor has a profile with required fields
+            const profileResponse = await fetch(`${origin}/api/tutors/profiles/check-complete?tutorId=${user.id}`);
+            if (profileResponse.ok) {
+              const { isComplete } = await profileResponse.json();
+              hasCompleteProfile = isComplete;
+            }
+          } catch (error) {
+            console.warn('Could not check tutor profile completeness:', error);
+          }
+          
+          // Try to create tutor record if it doesn't exist
           const response = await fetch(`${origin}/api/tutors/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -127,15 +144,61 @@ export async function GET(request: NextRequest) {
           
           if (response.ok) {
             console.log('Tutor profile created successfully');
+            
+            // Create a basic tutor profile so they appear in browse results
+            try {
+              const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Tutor';
+              const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+              
+              const profileResponse = await fetch(`${origin}/api/tutors/profiles`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  tutorId: user.id,
+                  displayName: displayName,
+                  subjects: ['Mathematics'], // Default subject
+                  profileImage: avatarUrl, // Cartoon avatar instead of placeholder
+                  country: 'Jamaica', // Default country
+                  city: 'Kingston', // Default city
+                  bio: 'New tutor - profile setup in progress',
+                  experience: '',
+                  hourlyRate: '',
+                  availability: '',
+                  address: ''
+                }),
+              });
+              
+              if (profileResponse.ok) {
+                console.log('Basic tutor profile created successfully');
+                hasCompleteProfile = false; // Force onboarding for new tutors
+              } else {
+                console.warn('Failed to create basic tutor profile, but tutor record exists');
+              }
+            } catch (profileError) {
+              console.warn('Error creating basic tutor profile:', profileError);
+            }
           } else if (response.status === 409) {
             console.log('Tutor profile already exists');
           } else {
             console.warn('Failed to create tutor profile, but proceeding with login');
           }
+          
+          // Redirect tutors based on profile completeness
+          if (hasCompleteProfile) {
+            return redirectResponse(`${origin}/dashboard`);
+          } else {
+            return redirectResponse(`${origin}/tutor-onboarding`);
+          }
         }
       } catch (error) {
         console.warn('Error creating user profile:', error);
         // Don't fail the authentication if profile creation fails
+        // Redirect based on user type
+        if (user.user_metadata?.role === 'tutor') {
+          return redirectResponse(`${origin}/tutor-onboarding`);
+        } else {
+          return redirectResponse(`${origin}/dashboard`);
+        }
       }
     }
     
@@ -209,9 +272,42 @@ export async function GET(request: NextRequest) {
             });
             if (!response.ok && response.status !== 409) {
               console.warn(`Tutor account creation failed with status ${response.status}`);
+            } else if (response.ok) {
+              // Create a basic tutor profile so they appear in browse results
+              try {
+                const profileResponse = await fetch(`${origin}/api/tutors/profiles`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    tutorId: user.id,
+                    displayName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Tutor',
+                    subjects: ['Mathematics'], // Default subject
+                    profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`, // Cartoon avatar
+                    country: 'Jamaica', // Default country
+                    city: 'Kingston', // Default city
+                    bio: 'New tutor - profile setup in progress',
+                    experience: '',
+                    hourlyRate: '',
+                    availability: '',
+                    address: ''
+                  }),
+                });
+                
+                if (profileResponse.ok) {
+                  console.log('Basic tutor profile created successfully');
+                } else {
+                  console.warn('Failed to create basic tutor profile, but tutor record exists');
+                }
+              } catch (profileError) {
+                console.warn('Error creating basic tutor profile:', profileError);
+              }
             }
+            
+            // Redirect tutors to onboarding (they'll have basic profiles that need completion)
+            return redirectResponse(`${origin}/tutor-onboarding`);
           } catch (error) {
             console.warn('Tutor account creation network error:', error);
+            return redirectResponse(`${origin}/tutor-onboarding`);
           }
         }
       } catch (provisionErr) {
@@ -303,9 +399,42 @@ export async function GET(request: NextRequest) {
             });
             if (!response.ok && response.status !== 409) {
               console.warn(`Tutor account creation failed with status ${response.status}`);
+            } else if (response.ok) {
+              // Create a basic tutor profile so they appear in browse results
+              try {
+                const profileResponse = await fetch(`${origin}/api/tutors/profiles`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    tutorId: user.id,
+                    displayName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Tutor',
+                    subjects: ['Mathematics'], // Default subject
+                    profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9]/g, '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`, // Cartoon avatar
+                    country: 'Jamaica', // Default country
+                    city: 'Kingston', // Default city
+                    bio: 'New tutor - profile setup in progress',
+                    experience: '',
+                    hourlyRate: '',
+                    availability: '',
+                    address: ''
+                  }),
+                });
+                
+                if (profileResponse.ok) {
+                  console.log('Basic tutor profile created successfully');
+                } else {
+                  console.warn('Failed to create basic tutor profile, but tutor record exists');
+                }
+              } catch (profileError) {
+                console.warn('Error creating basic tutor profile:', profileError);
+              }
             }
+            
+            // Redirect tutors to onboarding (they'll have basic profiles that need completion)
+            return redirectResponse(`${origin}/tutor-onboarding`);
           } catch (error) {
             console.warn('Tutor account creation network error:', error);
+            return redirectResponse(`${origin}/tutor-onboarding`);
           }
         }
       }
