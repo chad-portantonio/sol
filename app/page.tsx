@@ -17,39 +17,35 @@ export default function Home() {
       {/* Navigation */}
       <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col items-center">
-            {/* Nova Logo and Toggle Container */}
-            <div className="flex flex-col items-center mb-4">
-              <div className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
-                Nova
-              </div>
-              
-              {/* View Toggle */}
-              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                <button
-                  onClick={() => setActiveView('student')}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
-                    activeView === 'student'
-                      ? 'bg-green-500 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  I&apos;m a Student
-                </button>
-                <button
-                  onClick={() => setActiveView('tutor')}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
-                    activeView === 'tutor'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  I&apos;m a Tutor
-                </button>
-              </div>
+          <div className="flex justify-between items-center">
+            <div className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+              Nova
+            </div>
+            
+            {/* View Toggle */}
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setActiveView('student')}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                  activeView === 'student'
+                    ? 'bg-green-500 text-white shadow-lg'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                I&apos;m a Student
+              </button>
+              <button
+                onClick={() => setActiveView('tutor')}
+                className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                  activeView === 'tutor'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                I&apos;m a Tutor
+              </button>
             </div>
 
-            {/* Right Side Elements */}
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               <Link 
