@@ -81,13 +81,15 @@ export default async function Dashboard() {
         retryCount++;
         console.error(`Dashboard query attempt ${retryCount} failed:`, error);
         
-        // If it's a connection error and we have retries left, wait and try again
+        // If it's a connection error, prepared statement issue, or schema mismatch and we have retries left, wait and try again
         const errorMessage = (error as Error)?.message || '';
         const errorCode = (error as { code?: string })?.code;
         if (retryCount < maxRetries && (
           errorMessage.includes('prepared statement') ||
           errorMessage.includes('ConnectorError') ||
-          errorCode === 'P1001' // Connection error
+          errorMessage.includes('does not exist in the current database') ||
+          errorCode === 'P1001' || // Connection error
+          errorCode === 'P2022'    // Column doesn't exist
         )) {
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
           continue;
@@ -242,10 +244,41 @@ export default async function Dashboard() {
     );
   } catch (error) {
     console.error('Dashboard error:', error);
+    
+    // Check if it's a schema mismatch error
+    const errorMessage = (error as Error)?.message || '';
+    const errorCode = (error as { code?: string })?.code;
+    
+    if (errorMessage.includes('does not exist in the current database') || errorCode === 'P2022') {
+      return (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Database Update In Progress</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            The application is being updated. Please wait a moment while the database schema is synchronized.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mb-6">
+            This usually takes just a few seconds. You can try refreshing the page.
+          </p>
+          <Link
+            href="/dashboard"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+          >
+            Refresh Page
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Error</h2>
-        <p className="text-gray-600 mb-6">There was an error loading your dashboard. Please try refreshing the page.</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Error</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">There was an error loading your dashboard. Please try refreshing the page.</p>
+        <Link
+          href="/dashboard"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+        >
+          Refresh Page
+        </Link>
       </div>
     );
   }

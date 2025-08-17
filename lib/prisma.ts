@@ -11,6 +11,13 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
       url: process.env.DATABASE_URL,
     },
   },
+  // Fix PgBouncer prepared statement issues in serverless environments
+  ...(process.env.NODE_ENV === 'production' && {
+    transactionOptions: {
+      maxWait: 5000,
+      timeout: 10000,
+    },
+  }),
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

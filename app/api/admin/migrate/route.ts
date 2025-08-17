@@ -24,38 +24,48 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🚀 Starting production database migration...');
-    
-    // Test database connection
-    await prisma.$connect();
-    console.log('✅ Database connection successful');
-    
-    // Check current schema and verify tables exist
-    console.log('📊 Checking current database schema...');
-    
-    // Verify the Tutor table structure
-    const tutorCount = await prisma.tutor.count();
-    console.log(`📈 Current tutor count: ${tutorCount}`);
-    
-    // Test creating a sample tutor record (will be rolled back)
-    const testTutor = await prisma.tutor.create({
-      data: {
-        userId: 'test-migration-user',
-        email: 'test-migration@example.com',
-      },
-    });
-    
-    // Clean up test record
-    await prisma.tutor.delete({
-      where: { id: testTutor.id },
-    });
-    
-    console.log('✅ Schema verification successful');
+
+    // Add phone columns (idempotent)
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Tutor"   ADD COLUMN IF NOT EXISTS "phone" text;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "phone" text;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Parent"  ADD COLUMN IF NOT EXISTS "phone" text;`);
+
+    // Subject table
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Subject" (
+        "id"        text PRIMARY KEY,
+        "name"      text UNIQUE NOT NULL,
+        "category"  text,
+        "description" text,
+        "active"    boolean NOT NULL DEFAULT true,
+        "createdAt" timestamptz NOT NULL DEFAULT now()
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_subject_active"   ON "Subject" ("active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_subject_category" ON "Subject" ("category");`);
+
+    // GradeLevel table
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "GradeLevel" (
+        "id"        text PRIMARY KEY,
+        "name"      text UNIQUE NOT NULL,
+        "category"  text NOT NULL,
+        "sequence"  integer UNIQUE NOT NULL,
+        "description" text,
+        "active"    boolean NOT NULL DEFAULT true,
+        "createdAt" timestamptz NOT NULL DEFAULT now(),
+        "updatedAt" timestamptz NOT NULL DEFAULT now()
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_gradelevel_category" ON "GradeLevel" ("category");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_gradelevel_sequence" ON "GradeLevel" ("sequence");`);
+
     console.log('✅ Migration completed!');
     
     return NextResponse.json({
       success: true,
       message: 'Database migration completed successfully',
-      tutorCount,
+      tables: ['Subject', 'GradeLevel'],
       timestamp: new Date().toISOString(),
     });
     
