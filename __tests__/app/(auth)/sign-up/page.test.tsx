@@ -112,7 +112,7 @@ describe('SignUpPage', () => {
         })
       })
 
-      expect(screen.getByText('Please check your email for a magic link to sign in. The link will expire in 1 hour.')).toBeInTheDocument()
+      expect(screen.getByText('We sent you a magic link. Please check your email. The link expires in 1 hour.')).toBeInTheDocument()
     })
 
     it('clears form after successful submission', async () => {
@@ -224,7 +224,7 @@ describe('SignUpPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Please check your email for a magic link to sign in. The link will expire in 1 hour.')).toBeInTheDocument()
+        expect(screen.getByText('We sent you a magic link. Please check your email. The link expires in 1 hour.')).toBeInTheDocument()
       })
 
       // Second submission
@@ -232,7 +232,7 @@ describe('SignUpPage', () => {
       await user.click(submitButton)
 
       // Success message should be cleared momentarily during submission
-      expect(screen.queryByText('Please check your email for a magic link to sign in. The link will expire in 1 hour.')).not.toBeInTheDocument()
+      expect(screen.queryByText('We sent you a magic link. Please check your email. The link expires in 1 hour.')).not.toBeInTheDocument()
     })
   })
 
@@ -270,7 +270,7 @@ describe('SignUpPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        const successMessage = screen.getByText('Please check your email for a magic link to sign in. The link will expire in 1 hour.')
+        const successMessage = screen.getByText('We sent you a magic link. Please check your email. The link expires in 1 hour.')
         expect(successMessage).toBeInTheDocument()
         expect(successMessage.closest('div')).toHaveClass('text-green-700', 'dark:text-green-300')
       })

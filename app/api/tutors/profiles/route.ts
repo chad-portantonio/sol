@@ -6,8 +6,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const subject = searchParams.get('subject');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12'))); // Limit between 1-50
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -21,30 +21,43 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Get tutors with their profiles
-    const tutorProfiles = await prisma.tutorProfile.findMany({
-      where,
-      include: {
-        tutor: {
-          select: {
-            id: true,
-            email: true,
-            createdAt: true
-          }
-        }
-      },
-      orderBy: [
-        { verified: 'desc' }, // Verified tutors first
-        { rating: 'desc' },   // Then by rating
-        { totalSessions: 'desc' }, // Then by experience
-        { createdAt: 'desc' } // Finally by newest
-      ],
-      skip,
-      take: limit
-    });
-
-    // Get total count for pagination
-    const totalCount = await prisma.tutorProfile.count({ where });
+    // Get tutors with their profiles (with retry logic)
+    let tutorProfiles;
+    let totalCount;
+    
+    for (let retryCount = 0; retryCount < 3; retryCount++) {
+      try {
+        [tutorProfiles, totalCount] = await Promise.all([
+          prisma.tutorProfile.findMany({
+            where,
+            include: {
+              tutor: {
+                select: {
+                  id: true,
+                  email: true,
+                  createdAt: true
+                }
+              }
+            },
+            orderBy: [
+              { verified: 'desc' }, // Verified tutors first
+              { rating: 'desc' },   // Then by rating
+              { totalSessions: 'desc' }, // Then by experience
+              { createdAt: 'desc' } // Finally by newest
+            ],
+            skip,
+            take: limit
+          }),
+          prisma.tutorProfile.count({ where })
+        ]);
+        break; // Success, exit retry loop
+      } catch (dbError) {
+        console.error(`Database query attempt ${retryCount + 1} failed:`, dbError);
+        if (retryCount === 2) throw dbError; // Last attempt, re-throw error
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+      }
+    }
+    
     const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({

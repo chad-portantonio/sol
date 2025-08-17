@@ -154,8 +154,8 @@ describe('Dashboard Page', () => {
     const dashboard = await Dashboard();
     render(dashboard);
 
-    expect(screen.getByText('Setup In Progress')).toBeInTheDocument();
-    expect(screen.getByText('Your account is being set up. Please refresh the page in a moment.')).toBeInTheDocument();
+    expect(screen.getByText('Error')).toBeInTheDocument();
+    expect(screen.getByText('There was an error loading your dashboard. Please try refreshing the page.')).toBeInTheDocument();
     expect(screen.getByText('Refresh Page')).toBeInTheDocument();
   });
 

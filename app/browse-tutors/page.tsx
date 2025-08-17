@@ -68,30 +68,67 @@ export default function BrowseTutors() {
     'Spanish', 'French', 'Art', 'Music', 'Economics', 'Psychology'
   ];
 
-  const fetchTutors = async (page = 1, subject = '') => {
+  const fetchTutors = async (page = 1, subject = '', retryCount = 0) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '12'
       });
       
-      if (subject) {
-        params.append('subject', subject);
+      if (subject && subject.trim()) {
+        params.append('subject', subject.trim());
       }
 
-      const response = await fetch(`/api/tutors/profiles?${params}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+      const response = await fetch(`/api/tutors/profiles?${params}`, {
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Server error' }));
+        throw new Error(data.error || `Server returned ${response.status}`);
+      }
+      
       const data = await response.json();
-
-      if (response.ok) {
-        setTutors(data.tutors);
-        setPagination(data.pagination);
-      } else {
-        setError(data.error || 'Failed to fetch tutors');
+      
+      if (!data.tutors || !Array.isArray(data.tutors)) {
+        throw new Error('Invalid response format');
       }
-    } catch (err) {
+
+      setTutors(data.tutors);
+      setPagination(data.pagination);
+      
+    } catch (err: unknown) {
       console.error('Error fetching tutors:', err);
-      setError('Failed to fetch tutors');
+      
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      
+      // Retry logic for network errors
+      if (retryCount < 2 && (
+        errorMessage.includes('fetch') || 
+        errorMessage.includes('network') ||
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('AbortError')
+      )) {
+        console.log(`Retrying fetch (attempt ${retryCount + 2})...`);
+        setTimeout(() => fetchTutors(page, subject, retryCount + 1), 2000 * (retryCount + 1));
+        return;
+      }
+      
+      setError(errorMessage.includes('AbortError') 
+        ? 'Request timed out. Please check your connection and try again.'
+        : `Failed to load tutors: ${errorMessage}`
+      );
     } finally {
       setLoading(false);
     }
@@ -201,7 +238,13 @@ export default function BrowseTutors() {
         ) : error ? (
           <div className="text-center py-16">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-6 py-4 rounded-lg max-w-md mx-auto">
-              {error}
+              <div className="mb-4">{error}</div>
+              <button
+                onClick={() => fetchTutors(pagination.currentPage, searchSubject)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Try Again
+              </button>
             </div>
           </div>
         ) : tutors.length === 0 ? (

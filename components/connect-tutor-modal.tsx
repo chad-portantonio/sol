@@ -41,16 +41,31 @@ export default function ConnectTutorModal({
     setError(null);
 
     try {
-      // Check authentication
-      const { data: { user } } = await supabase.auth.getUser();
+      // Check authentication with timeout
+      const authTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Authentication check timed out')), 10000)
+      );
       
-      if (!user) {
+      const authResult = await Promise.race([
+        supabase.auth.getUser(),
+        authTimeout
+      ]) as { data: { user: any }, error: any };
+      
+      if (authResult.error || !authResult.data?.user) {
         // Redirect to sign up with connection intent
-        window.location.href = `/student-sign-up?connect=${tutorId}&subject=${encodeURIComponent(selectedSubject)}`;
+        const params = new URLSearchParams({
+          connect: tutorId,
+          subject: selectedSubject,
+          message: message || ''
+        });
+        window.location.href = `/student-sign-up?${params}`;
         return;
       }
 
-      // Make connection request
+      // Make connection request with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch('/api/student-tutor-connections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,18 +74,32 @@ export default function ConnectTutorModal({
           subject: selectedSubject,
           requestMessage: message || `Hi ${tutorName}! I would like to connect with you for ${selectedSubject} tutoring.`,
         }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         onSuccess();
         onClose();
+        // Reset form
+        setSelectedSubject('');
+        setMessage('');
       } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to send connection request');
+        const data = await response.json().catch(() => ({ error: 'Server error' }));
+        setError(data.error || `Failed to send connection request (${response.status})`);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error sending connection request:', err);
-      setError('Failed to send connection request. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      
+      if (errorMessage.includes('AbortError') || errorMessage.includes('timed out')) {
+        setError('Request timed out. Please check your connection and try again.');
+      } else if (errorMessage.includes('Authentication check timed out')) {
+        setError('Authentication check failed. Please sign in and try again.');
+      } else {
+        setError(`Failed to send connection request: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
