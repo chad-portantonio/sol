@@ -394,16 +394,35 @@ export default function TutorOnboarding() {
                 </div>
                 <div>
                   <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Hourly Rate
+                    Hourly Rate (USD)
                   </label>
-                  <input
+                  <select
                     id="hourlyRate"
-                    type="text"
                     value={profile.hourlyRate}
                     onChange={(e) => setProfile(prev => ({ ...prev, hourlyRate: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., $25/hour or $20-30/hour"
-                  />
+                  >
+                    <option value="">Select your hourly rate</option>
+                    <option value="$15/hour">$15/hour</option>
+                    <option value="$20/hour">$20/hour</option>
+                    <option value="$25/hour">$25/hour</option>
+                    <option value="$30/hour">$30/hour</option>
+                    <option value="$35/hour">$35/hour</option>
+                    <option value="$40/hour">$40/hour</option>
+                    <option value="$45/hour">$45/hour</option>
+                    <option value="$50/hour">$50/hour</option>
+                    <option value="$60/hour">$60/hour</option>
+                    <option value="$70/hour">$70/hour</option>
+                    <option value="$80/hour">$80/hour</option>
+                    <option value="$100/hour">$100/hour</option>
+                    <option value="$15-25/hour">$15-25/hour (Range)</option>
+                    <option value="$20-30/hour">$20-30/hour (Range)</option>
+                    <option value="$25-35/hour">$25-35/hour (Range)</option>
+                    <option value="$30-40/hour">$30-40/hour (Range)</option>
+                    <option value="$40-60/hour">$40-60/hour (Range)</option>
+                    <option value="$50-80/hour">$50-80/hour (Range)</option>
+                    <option value="Negotiable">Negotiable</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -426,17 +445,52 @@ export default function TutorOnboarding() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="availability" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Availability
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                    Availability Schedule
                   </label>
-                  <textarea
-                    id="availability"
-                    value={profile.availability}
-                    onChange={(e) => setProfile(prev => ({ ...prev, availability: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Weekdays 4-8 PM, Weekends 10 AM-6 PM"
-                  />
+                  <div className="space-y-4">
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                      <div key={day} className="flex items-center space-x-4 p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
+                        <div className="w-24 font-medium text-gray-700 dark:text-gray-300">
+                          {day}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <select 
+                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                            onChange={(e) => {
+                              const timeSlot = e.target.value;
+                              const currentAvailability = profile.availability || '';
+                              const lines = currentAvailability.split('\n').filter(line => !line.startsWith(day));
+                              if (timeSlot) {
+                                lines.push(`${day}: ${timeSlot}`);
+                              }
+                              setProfile(prev => ({ ...prev, availability: lines.join('\n') }));
+                            }}
+                            value={
+                              profile.availability?.split('\n')
+                                .find(line => line.startsWith(day))
+                                ?.split(': ')[1] || ''
+                            }
+                          >
+                            <option value="">Not Available</option>
+                            <option value="9:00 AM - 12:00 PM">Morning (9:00 AM - 12:00 PM)</option>
+                            <option value="12:00 PM - 3:00 PM">Early Afternoon (12:00 PM - 3:00 PM)</option>
+                            <option value="3:00 PM - 6:00 PM">Late Afternoon (3:00 PM - 6:00 PM)</option>
+                            <option value="6:00 PM - 9:00 PM">Evening (6:00 PM - 9:00 PM)</option>
+                            <option value="9:00 AM - 6:00 PM">All Day (9:00 AM - 6:00 PM)</option>
+                            <option value="9:00 AM - 3:00 PM">Morning to Afternoon (9:00 AM - 3:00 PM)</option>
+                            <option value="3:00 PM - 9:00 PM">Afternoon to Evening (3:00 PM - 9:00 PM)</option>
+                            <option value="Flexible">Flexible Times</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Preview:</strong> {profile.availability || 'No availability set'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

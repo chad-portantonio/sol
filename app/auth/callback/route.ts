@@ -115,8 +115,8 @@ export async function GET(request: NextRequest) {
             console.warn(`Network error creating ${role} account:`, fetchError, '- proceeding with login');
           }
           
-          // Students always go to dashboard
-          return redirectResponse(`${origin}/dashboard`);
+          // Students always go to student dashboard
+          return redirectResponse(`${origin}/student/dashboard`);
         } else {
           // This is a tutor - check if they have a complete profile
           let hasCompleteProfile = false;
@@ -203,7 +203,7 @@ export async function GET(request: NextRequest) {
         if (user.user_metadata?.role === 'tutor') {
           return redirectResponse(`${origin}/tutor-onboarding`);
         } else {
-          return redirectResponse(`${origin}/dashboard`);
+          return redirectResponse(`${origin}/student/dashboard`);
         }
       }
     }

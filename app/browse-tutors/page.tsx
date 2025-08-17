@@ -282,7 +282,7 @@ export default function BrowseTutors() {
               {tutors.map((tutor) => (
                 <div key={tutor.id} className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                   <div className="text-center mb-3 sm:mb-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       {tutor.profileImage ? (
                         <img 
                           src={tutor.profileImage} 

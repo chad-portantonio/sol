@@ -58,10 +58,10 @@ describe('/api/tutors/profiles', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.profiles).toHaveLength(1);
-      expect(data.totalPages).toBe(1);
-      expect(data.currentPage).toBe(1);
-      expect(data.totalProfiles).toBe(1);
+      expect(data.tutors).toHaveLength(1);
+      expect(data.pagination.totalPages).toBe(1);
+      expect(data.pagination.currentPage).toBe(1);
+      expect(data.pagination.totalCount).toBe(1);
     });
 
     it('filters by subject when provided', async () => {
@@ -74,7 +74,7 @@ describe('/api/tutors/profiles', () => {
       expect(prisma.tutorProfile.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            subjects: { has: 'Mathematics' },
+            subjects: { hasSome: ['Mathematics'] },
           }),
         })
       );
@@ -88,9 +88,9 @@ describe('/api/tutors/profiles', () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.currentPage).toBe(2);
-      expect(data.totalPages).toBe(3);
-      expect(data.totalProfiles).toBe(25);
+      expect(data.pagination.currentPage).toBe(2);
+      expect(data.pagination.totalPages).toBe(3);
+      expect(data.pagination.totalCount).toBe(25);
     });
 
     it('returns empty results when no profiles found', async () => {
@@ -102,8 +102,8 @@ describe('/api/tutors/profiles', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.profiles).toHaveLength(0);
-      expect(data.totalProfiles).toBe(0);
+      expect(data.tutors).toHaveLength(0);
+      expect(data.pagination.totalCount).toBe(0);
     });
   });
 
@@ -123,6 +123,12 @@ describe('/api/tutors/profiles', () => {
         address: '456 Oak St',
       };
 
+      // Mock tutor exists
+      (prisma.tutor.findUnique as jest.Mock).mockResolvedValue({
+        id: 'tutor-1',
+        email: 'jane@example.com'
+      });
+
       (prisma.tutorProfile.upsert as jest.Mock).mockResolvedValue({
         id: 'profile-1',
         ...profileData,
@@ -137,7 +143,7 @@ describe('/api/tutors/profiles', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.message).toBe('Profile created/updated successfully');
+      expect(data.message).toBe('Tutor profile saved successfully');
       expect(prisma.tutorProfile.upsert).toHaveBeenCalledWith({
         where: { tutorId: 'tutor-1' },
         update: profileData,
@@ -244,6 +250,12 @@ describe('/api/tutors/profiles', () => {
         city: 'Bridgetown',
       };
 
+      // Mock tutor exists
+      (prisma.tutor.findUnique as jest.Mock).mockResolvedValue({
+        id: 'existing-tutor',
+        email: 'existing@example.com'
+      });
+
       (prisma.tutorProfile.upsert as jest.Mock).mockResolvedValue({
         id: 'existing-profile',
         ...profileData,
@@ -258,7 +270,7 @@ describe('/api/tutors/profiles', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.message).toBe('Profile created/updated successfully');
+      expect(data.message).toBe('Tutor profile saved successfully');
       expect(prisma.tutorProfile.upsert).toHaveBeenCalledWith({
         where: { tutorId: 'existing-tutor' },
         update: profileData,
