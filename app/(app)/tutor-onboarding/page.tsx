@@ -288,10 +288,11 @@ export default function TutorOnboarding() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Display Name *
                   </label>
                   <input
+                    id="displayName"
                     type="text"
                     required
                     value={profile.displayName}
@@ -301,10 +302,11 @@ export default function TutorOnboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Country *
                   </label>
                   <select
+                    id="country"
                     required
                     value={profile.country}
                     onChange={(e) => setProfile(prev => ({ ...prev, country: e.target.value }))}
@@ -317,10 +319,11 @@ export default function TutorOnboarding() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     City *
                   </label>
                   <input
+                    id="city"
                     type="text"
                     required
                     value={profile.city}
@@ -330,10 +333,11 @@ export default function TutorOnboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Address
                   </label>
                   <input
+                    id="address"
                     type="text"
                     value={profile.address}
                     onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
@@ -376,10 +380,11 @@ export default function TutorOnboarding() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Experience & Rates</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="experience" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Experience
                   </label>
                   <textarea
+                    id="experience"
                     value={profile.experience}
                     onChange={(e) => setProfile(prev => ({ ...prev, experience: e.target.value }))}
                     rows={3}
@@ -388,10 +393,11 @@ export default function TutorOnboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Hourly Rate
                   </label>
                   <input
+                    id="hourlyRate"
                     type="text"
                     value={profile.hourlyRate}
                     onChange={(e) => setProfile(prev => ({ ...prev, hourlyRate: e.target.value }))}
@@ -407,10 +413,11 @@ export default function TutorOnboarding() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Bio & Availability</h3>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Bio
                   </label>
                   <textarea
+                    id="bio"
                     value={profile.bio}
                     onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
                     rows={4}
@@ -419,10 +426,11 @@ export default function TutorOnboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="availability" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Availability
                   </label>
                   <textarea
+                    id="availability"
                     value={profile.availability}
                     onChange={(e) => setProfile(prev => ({ ...prev, availability: e.target.value }))}
                     rows={3}
