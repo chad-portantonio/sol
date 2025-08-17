@@ -69,33 +69,32 @@ export default function TutorProfilePage() {
 
       // Load existing profile
       try {
-        const response = await fetch('/api/tutors/profiles');
+        const response = await fetch(`/api/tutors/profiles/${user.id}`);
         if (response.ok) {
           const data = await response.json();
           console.log('Profile data loaded:', data); // Debug log
           
-          if (data.tutors && Array.isArray(data.tutors)) {
-            const userProfile = data.tutors.find((t: { tutor?: { userId: string } }) => t.tutor?.userId === user.id);
-            if (userProfile) {
-              console.log('Found user profile:', userProfile); // Debug log
-              setProfile({
-                displayName: userProfile.displayName || '',
-                bio: userProfile.bio || '',
-                subjects: userProfile.subjects || [],
-                experience: userProfile.experience || '',
-                hourlyRate: userProfile.hourlyRate || '',
-                availability: userProfile.availability || '',
-                profileImage: userProfile.profileImage || '',
-                country: userProfile.country || '',
-                city: userProfile.city || '',
-                address: userProfile.address || ''
-              });
-            } else {
-              console.log('No profile found for user:', user.id); // Debug log
-            }
+          if (data.profile) {
+            console.log('Found user profile:', data.profile); // Debug log
+            setProfile({
+              displayName: data.profile.displayName || '',
+              bio: data.profile.bio || '',
+              subjects: data.profile.subjects || [],
+              experience: data.profile.experience || '',
+              hourlyRate: data.profile.hourlyRate || '',
+              availability: data.profile.availability || '',
+              profileImage: data.profile.profileImage || '',
+              country: data.profile.country || '',
+              city: data.profile.city || '',
+              address: data.profile.address || ''
+            });
           } else {
-            console.log('Invalid data structure:', data); // Debug log
+            console.log('No profile found for user:', user.id); // Debug log
+            // Profile doesn't exist yet, this is normal for new users
           }
+        } else if (response.status === 404) {
+          console.log('No profile found for user:', user.id); // Debug log
+          // Profile doesn't exist yet, this is normal for new users
         } else {
           console.error('Failed to fetch profile:', response.status, response.statusText);
         }
