@@ -30,6 +30,38 @@ export async function POST(request: NextRequest) {
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "phone" text;`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "Parent"  ADD COLUMN IF NOT EXISTS "phone" text;`);
 
+    // CRITICAL: Add missing email column to Student table
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "email" text;`);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_student_email" ON "Student" ("email");`);
+
+    // CRITICAL: Create missing TutorProfile table
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "TutorProfile" (
+        "id"           text PRIMARY KEY,
+        "tutorId"      text UNIQUE NOT NULL,
+        "displayName"  text NOT NULL,
+        "bio"          text,
+        "subjects"     text[] DEFAULT '{}',
+        "experience"   text,
+        "hourlyRate"   text,
+        "availability" text,
+        "profileImage" text,
+        "rating"       double precision,
+        "totalReviews" integer NOT NULL DEFAULT 0,
+        "totalSessions" integer NOT NULL DEFAULT 0,
+        "verified"     boolean NOT NULL DEFAULT false,
+        "active"       boolean NOT NULL DEFAULT true,
+        "createdAt"    timestamptz NOT NULL DEFAULT now(),
+        "updatedAt"    timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT "TutorProfile_tutorId_fkey" FOREIGN KEY ("tutorId") REFERENCES "Tutor"("id") ON DELETE CASCADE
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_tutorid" ON "TutorProfile" ("tutorId");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_subjects" ON "TutorProfile" ("subjects");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_active" ON "TutorProfile" ("active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_verified" ON "TutorProfile" ("verified");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_tutorprofile_rating" ON "TutorProfile" ("rating");`);
+
     // Subject table
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "Subject" (
@@ -65,7 +97,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Database migration completed successfully',
-      tables: ['Subject', 'GradeLevel'],
+      tables: ['Student (added email)', 'TutorProfile', 'Subject', 'GradeLevel'],
       timestamp: new Date().toISOString(),
     });
     
