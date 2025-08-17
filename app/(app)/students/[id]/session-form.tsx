@@ -11,6 +11,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
   const [formData, setFormData] = useState({
     startTime: "",
     endTime: "",
+    subject: "",
     notes: "",
     homework: "",
   });
@@ -58,6 +59,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
           studentId,
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
+          subject: (formDataObj.get('subject') as string) || formData.subject || 'General',
           notes: (formDataObj.get('notes') as string) || formData.notes || undefined,
           homework: (formDataObj.get('homework') as string) || formData.homework || undefined,
         }),
@@ -70,7 +72,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
       }
 
       setSuccess(true);
-      setFormData({ startTime: "", endTime: "", notes: "", homework: "" });
+      setFormData({ startTime: "", endTime: "", subject: "", notes: "", homework: "" });
       
       // Reset success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
@@ -85,7 +87,7 @@ export function SessionForm({ studentId }: SessionFormProps) {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData({
       ...formData,
@@ -170,6 +172,38 @@ export function SessionForm({ studentId }: SessionFormProps) {
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Subject *
+        </label>
+        <select
+          id="subject"
+          name="subject"
+          required
+          disabled={loading}
+          value={formData.subject}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <option value="">Select a subject</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="English">English</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="Spanish">Spanish</option>
+          <option value="French">French</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Economics">Economics</option>
+          <option value="Literature">Literature</option>
+          <option value="Art">Art</option>
+          <option value="Music">Music</option>
+          <option value="General">General</option>
+        </select>
       </div>
 
       <div>
