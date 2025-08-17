@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 // Get student account by authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     
@@ -114,8 +114,8 @@ export async function PATCH(request: NextRequest) {
 
     const updateData = await request.json();
     
-    // Remove fields that shouldn't be updated
-    const { userId, email, createdAt, ...allowedUpdates } = updateData;
+    // Remove fields that shouldn't be updated  
+    const { userId: _userId, email: _email, createdAt: _createdAt, ...allowedUpdates } = updateData;
 
     // Update the student account
     const updatedStudent = await prisma.student.update({

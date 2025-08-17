@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { formatDate } from '@/lib/time';
-import { Student } from '@/lib/types';
+
 import { redirect } from 'next/navigation';
 
 export default async function Dashboard() {

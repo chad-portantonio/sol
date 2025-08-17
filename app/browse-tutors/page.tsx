@@ -57,10 +57,7 @@ export default function BrowseTutors() {
     tutorSubjects: []
   });
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+
 
   const subjects = [
     'Mathematics', 'English', 'Science', 'Physics', 'Chemistry', 'Biology',
@@ -136,7 +133,7 @@ export default function BrowseTutors() {
 
   useEffect(() => {
     fetchTutors(1, searchSubject);
-  }, [searchSubject]);
+  }, [searchSubject]); // fetchTutors is stable due to useCallback not needed here
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {

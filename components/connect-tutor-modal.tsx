@@ -49,7 +49,7 @@ export default function ConnectTutorModal({
       const authResult = await Promise.race([
         supabase.auth.getUser(),
         authTimeout
-      ]) as { data: { user: any }, error: any };
+      ]) as { data: { user: unknown }, error: unknown };
       
       if (authResult.error || !authResult.data?.user) {
         // Redirect to sign up with connection intent
