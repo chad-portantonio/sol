@@ -160,12 +160,17 @@ select:focus-visible {
   transition-duration: 150ms;
 }
 
-/* Starfield Animation - Stars Appear Gradually and Stay Visible */
+/* Starfield Animation - Stars Appear Quickly and Stay Visible */
 @keyframes starTwinkle {
   0% {
     opacity: 0;
     transform: scale(0.8);
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
   }
   100% {
     opacity: 1;
@@ -181,6 +186,11 @@ select:focus-visible {
     transform: scale(0.8);
     box-shadow: 0 0 5px rgba(173, 216, 230, 0.2);
   }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(173, 216, 230, 0.8);
+  }
   100% {
     opacity: 1;
     transform: scale(1.2);
@@ -193,6 +203,11 @@ select:focus-visible {
     opacity: 0;
     transform: scale(0.8);
     box-shadow: 0 0 5px rgba(255, 255, 224, 0.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 255, 224, 0.8);
   }
   100% {
     opacity: 1;
@@ -207,6 +222,11 @@ select:focus-visible {
     transform: scale(0.8);
     box-shadow: 0 0 5px rgba(255, 165, 0, 0.2);
   }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 165, 0, 0.8);
+  }
   100% {
     opacity: 1;
     transform: scale(1.2);
@@ -219,6 +239,11 @@ select:focus-visible {
     opacity: 0;
     transform: scale(0.8);
     box-shadow: 0 0 5px rgba(255, 99, 71, 0.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 99, 71, 0.8);
   }
   100% {
     opacity: 1;
