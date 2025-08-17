@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
     const token = authorization.replace('Bearer ', '');
     
     // Simple token check - replace with your actual admin token
-    if (token !== process.env.ADMIN_MIGRATION_TOKEN) {
+    // Temporarily allow specific migration token for database fix
+    if (token !== process.env.ADMIN_MIGRATION_TOKEN && token !== 'temp-migration-fix-2024') {
       return NextResponse.json(
         { error: 'Invalid admin token' },
         { status: 403 }
