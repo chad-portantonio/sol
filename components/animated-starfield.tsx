@@ -17,7 +17,7 @@ export default function AnimatedStarfield() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            animation: 'starTwinkle 8s ease-in-out forwards'
+            animation: 'starTwinkle 4s ease-in-out forwards'
           }}
         ></div>
         
@@ -43,7 +43,7 @@ export default function AnimatedStarfield() {
               top: star.top,
               left: star.left,
               backgroundColor: star.color,
-              animation: `${star.animation} 10s ease-in-out ${star.delay} forwards`
+              animation: `${star.animation} 5s ease-in-out ${star.delay} forwards`
             }}
           ></div>
         ))}
@@ -78,7 +78,7 @@ export default function AnimatedStarfield() {
               top: star.top,
               left: star.left,
               backgroundColor: star.color,
-              animation: `${star.animation} 8s ease-in-out ${index * 0.6}s forwards`
+              animation: `${star.animation} 4s ease-in-out ${index * 0.3}s forwards`
             }}
           ></div>
         ))}
@@ -113,7 +113,7 @@ export default function AnimatedStarfield() {
               top: star.top,
               left: star.left,
               backgroundColor: star.color,
-              animation: `${star.animation} 10s ease-in-out ${index * 0.8}s forwards`
+              animation: `${star.animation} 5s ease-in-out ${index * 0.4}s forwards`
             }}
           ></div>
         ))}
